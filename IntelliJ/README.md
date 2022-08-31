@@ -1,15 +1,16 @@
 # IntelliJ
 
 * 자바 통합 개발환경
-
 * Ultimate(유료), Community(무료)가 있음
+  * Community + Spring Initializr(spring2.4.5+Gradle +jar + java) 사용하면 비슷함
+
 
 
 
 # IntelliJ 사용하는 이유
 
 * 단축키, 디버깅, 자동완성이 편리
-* Plug in을 간편하게 설치하여 사용 가능
+* Plug in을 간편하게 설치하여 사용 가능(shift2번)
 
 * git 연동 가능
 
@@ -259,3 +260,30 @@ Ant의 유연한 구조적 장점 + 편리한 의존성 관리 +빌드 타임이
 
 # 테스트 코드 작성
 
+1. 빌드 라이브러리 추가
+
+   1. build gradle dependency에 테스트 라이브러리 추가 -> reload
+
+   2. create test
+
+   3. TodoService 테스트
+
+      1. Mock 설정
+
+         1. 클래스 위에 @ExtendWith(MockitoExtension.class)
+
+         2. @Mock : 외부시스템(Unit, DB)에 의존하지 않고 자체 테스트가 가능해야 됨, DB에는 민감한 정보가 있을 수 있으므로
+
+            TocoRepository에 Mock 설정
+
+         3. @InjectMocks : TodoService에 Mock 주입
+
+      2. Test 코드 작성
+
+   4. TodoController 테스트
+
+      1. 클래스 @WebMvcTest(TodoController.class)
+      2. @Autowired MockMvc mvc
+      3. @MockBean : 
+      4. @BeforeEach : 테스트하기전 초기화
+      5. 테스트코드 작성
