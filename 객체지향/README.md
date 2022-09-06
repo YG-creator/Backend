@@ -46,7 +46,7 @@
 
      변수는 private
 
-     public method는 입력된 매개변수를 validation을 한 수 실행
+     public method는 입력된 매개변수를 validation을 한 후 실행
 
 
 
@@ -56,7 +56,7 @@
    * 프로그램 구조 이해도 향상
    * 재사용성 향상
    * 확장성 향상
-   * 유지모수성 향상
+   * 유지보수성 향상
 
 
 

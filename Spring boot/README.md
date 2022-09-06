@@ -1,8 +1,8 @@
 # Spring Boot란?
 
-프로덕션 수준의 스프링 기반 어플리케이션을 쉬게 만들 수 있다.
+프로덕션 수준의 스프링 기반 어플리케이션을 쉽게 만들 수 있다.
 
-Spring 굿성이 거의 필요하지 않다.
+Spring 구성이 거의 필요하지 않다.
 
 java 어플리케이션 만들 수 있다.
 
@@ -72,7 +72,7 @@ Spring 불편한거 없앰(XML 설정)
 
 ## 방법
 
-Chrome  웹 스토어 -> Talend API Tester 추가
+Chrome  웹 스토어 -> Talent API Tester 추가
 
 
 
@@ -257,7 +257,7 @@ Resource Delete, Query Parameter(데이터가 작아서)
    2. 함수 return 이름.html
    3. resource -> static 에 이름.html작성
 2. JSON Body로 응답 -> 보통 안함
-   1. @ResponseBocy
+   1. @ResponseBody
    2. 매핑 Annotation
    3. 함수안에서 인스턴스 생성 후 -> 값 set -> return instance
 
@@ -269,14 +269,14 @@ Resource Delete, Query Parameter(데이터가 작아서)
 
    1. 함수 
 
-      1. wirteValueAsString(dto 인스턴스 이름) : object -> text
+      1. writeValueAsString(dto 인스턴스 이름) : object -> text
       2. readValue(text이름, dto클래스이름.class) : text -> object
 
    2. 주의점
 
       1. object -> text
 
-         get메소드 있어댜 됨
+         get메소드 있어야 됨
 
       2. text -> object 
 
