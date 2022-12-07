@@ -164,13 +164,23 @@
 
 ### Observer 패턴
 
-1. 개념변화가 일어났을 때 미리 등록된 다른 클래스에 미리 통보해주는 패턴
+1. event listener(이벤트 전달)
 
    ![image-20220831113859351](md-images/image-20220831113859351.png)
 
-ex) event listener(이벤트 전달)
+ex) 
 
+1. Interface
 
+   ![image-20221207194819193](md-images/image-20221207194819193.png)
+
+2. Class 
+
+   ![image-20221207194742529](md-images/image-20221207194742529.png)
+
+3. 실행
+
+   ![image-20221207195323795](md-images/image-20221207195323795.png)
 
 ### Strategy 패턴
 
@@ -181,10 +191,22 @@ ex) event listener(이벤트 전달)
 ex) Encoder
 
 1. EncoderStrategy interface 만들기
+
+   ![image-20221207201341538](md-images/image-20221207201341538.png)
+
 2. Base64, normal 클래스로 각자 인터페이스 구현
+
+   ![image-20221207201417556](md-images/image-20221207201417556.png)![image-20221207201637191](md-images/image-20221207201637191.png)
+
+   
+
 3. Encoder 클래스로 EncoderStrategy를 선택할 수 있게 함
-   1. setEncoderStrategy(EncoderStrategy  strategy)
-   2. 기능 수행 함수 만들기
+   
+   ![image-20221207201530244](md-images/image-20221207201530244.png)
+   
 4. 전략에 맞게 사용
+   
+   ![image-20221207201322581](md-images/image-20221207201322581.png)
+   
    1. 전략선택 (encoder.setEncoderStrategy(전략 선택))
    2. 함수 실행

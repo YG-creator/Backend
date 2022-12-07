@@ -63,13 +63,13 @@ REST(Representational State Transfer 자원의 상태 전달) - 네트워크 아
 
 ## URI vs URL
 
-URI(Uniform Resource Identifier) : 인터넷에서 특정 자원의 주소 값(유일함)
+URI(Uniform Resource Identifier) : 인터넷에서 자원의 주소 or 식별자
 
 ex) 요청 : https://www.naver.com/resource/sample/1 
 
 ​	  응답 : homework.pdf
 
-URL(Uniform Resource Location) : 인터넷 상에서의 자원이 어디있는지 식별하는 주소
+URL(Uniform Resource Location) : 인터넷에서 자원의 주소
 
 ex) 요청 : http://www.naver.com/homework.pdf
 
