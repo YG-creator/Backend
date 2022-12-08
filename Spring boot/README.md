@@ -64,15 +64,15 @@ Spring 불편한거 없앰(XML 설정)
 
 
 
-# REST Client 설치
+# REST API Client 설치
 
-## REST Client 용도
+## 용도
 
 웹 어플리케이션 테스트 용도
 
 ## 방법
 
-Chrome  웹 스토어 -> Talent API Tester 추가
+Chrome  웹 스토어 -> REST API Client 검색 -> Talent API Tester 추가
 
 
 
@@ -88,9 +88,9 @@ src -> main -> resorces -> application properties -> server.port = 원하는포�
 
 ## 공통
 
-1. Annotation
+1. 클래스 위 Annotation
    1. @RestController : 컨트롤러임을 명시
-   2. @RequestMapping("주소") : 공통 주소
+   2. @RequestMapping("주소") : 공통 주소 
 
 
 
@@ -100,31 +100,45 @@ Resource Read, parameter header에 작성
 
 1. 고정된 주소
 
-   @GetMapping("주소")
+   @GetMapping("주소")   =  @RequestMapping(path="주소", method = Request.GET)
 
-2. PathVariable
+2. PathVariable(변하는 주소)
 
-   1. GetMapping에 {변수이름}
+   1. 함수 위에 GetMapping("/주소/{변수이름}")
 
    2. 함수 매개변수에 @PathVariable
 
       1. 매개변수이름 = 변수이름 인 경우 : @PathVariable 타입 변수이름
 
-      2. 다른경우
+         ![image-20221208212331496](md-images/image-20221208212331496.png)
 
-         @PathVariable(name="변수이름") 타입 매개변수이름
+      2. 매개변수이름 != 변수이름 인 경우 : @PathVariable(name = "변수이름") 타입 매개변수이름 
+      
+         ![image-20221208212307702](md-images/image-20221208212307702.png)
 
-3. QueryParam 
+3. QueryParam(?뒤, &) 
 
    1. 함수 매개변수에 @RequestParam
 
-      1. Map
-      2. 각 변수마다 
-
-   2. 함수 매개변수에 dto 객체
-
-      dto class 구현 ->함수 매개변수에 구현한 class 넣기
-
+      1. Map : 뭐가 들어올지 모를 때
+   
+         ![image-20221208213634053](md-images/image-20221208213634053.png)
+   
+      2. 뭐가 들어오는지 알 때
+   
+         1. 일일히 @ReqeustParam : 수가 적을 때
+   
+            ![image-20221208213834239](md-images/image-20221208213834239.png)
+   
+         2. dto 객체 : 수가 많고 검증이 필요할 때
+   
+            1. dto 객체 구현(변수 선언, get 함수,set 함수)
+            2. dto 객체 사용
+   
+            ![image-20221208213810361](md-images/image-20221208213810361.png)
+   
+      
+   
       
 
 ## POST API
@@ -151,13 +165,13 @@ Resourse Create,  parameter DataBody에 데이터 작성
 
       
 
-3. 고정된 주소
+3. post 매핑
 
    @PostMapping("주소")
 
    
 
-4. PathVariable 가능 : {}
+4. PathVariable 가능 : @PostMapping("/주소/{변수이름}")
 
    
 
@@ -165,23 +179,25 @@ Resourse Create,  parameter DataBody에 데이터 작성
 
    
 
-6. Data Body
+6. Request Body
 
-   1. request에서 Json body 가져옴
+   1. 매핑 : 함수 위 @PostMapping("주소")
 
-   2. @PostMapping("주소")
+   2. Request Body에서 가져오기 
 
-   3. 함수 매개변수에 @RequestBody 타입 매개변수이름
+      1. map : 뭐가 들어올지 모를 때
 
-      1. map
+      2. 일일히 @ReqeustBody : 수가 적을 때
 
-         한계 : 자료형
+         함수 매개변수 : @RequestBody 타입 매개변수 이름
 
-      2. dto
+      2. dto 객체 : 수가 많고 검증이 필요할 때
 
          * 주의점 : 카넬(Java)이나 스네이크(Json) 이름 다를 때
          * 해결
-           1. 변수마다 JsonProperty("json에서 작성한 key이름")로 설정
+           1.  JsonProperty("json에서 작성한 key이름")로 설정
+              1. 카넬 vs 스네이크
+              2. 둘다 아닐 때
            2. class 위에 JsonNaming(value = PropertyNamingsStrategy.SnakeCaseStrategy.class) : 반환도 JSON형태로 해줌, 변수이름을 스네이크식으로 이해함
 
  
