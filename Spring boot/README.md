@@ -1,76 +1,56 @@
 # Spring Boot란?
 
-프로덕션 수준의 스프링 기반 어플리케이션을 쉽게 만들 수 있다.
+## 사용하는 이유
 
-Spring 구성이 거의 필요하지 않다.
+* 프로덕션 수준의 스프링 기반 어플리케이션을 쉽게 만들 수 있다.
+  * 어플리케이션 개발에 필수 요소들만 모아두었다.
+  * 간단한 설정으로 개발 및 커스텀 가능(어노테이션)
+  * 간단하고 빠르게 어플리케이션 실행 및 배포가 가능(jar)
+  * 대규모프로젝트에 필요한 비 기능적 기능도 제공
+  * 오래되서 안정적인 운영 가능
+  * Spring 불편한거 없앰(XML 설정)
 
-java 어플리케이션 만들 수 있다.
+* Spring 구성이 거의 필요하지 않다.
 
-
-
-목표
-
-Spring 개발에 대해 빠르고 광범위하게 적용 가능
-
-기본설정이 있지만 바꿀 수 있음
-
-대규모 프로젝트에 공통적인 비기능 제공
-
-XML 구성 요구사항 없음
+* java 어플리케이션 만들 수 있다.
 
 
 
-Build Tool
+## Build Tool
 
-Maven
+* Maven
 
-Gradle v
-
-
-
-Servlet Contatiners
-
-Tomcat v
-
-Jetty
-
-undertow
-
-Netty
+* Gradle 사용
 
 
 
-IntellilJ로 실행하는 법
+## Servlet Contatiners
 
-spring initializr로 프로젝트 다운받아서도 가능
+* Tomcat 사용
 
-IntelliJ에서 plugin 다운 받아서도 가능
+* Jetty
 
+* undertow
 
-
-장점
-
-어플리케이션 개발에 필수 요소들만 모아두었다.
-
-간단한 설정으로 개발 및 커스텀 가능(어노테이션)
-
-간단하고 빠르게 어플리케이션 실행 및 배포가 가능(jar)
-
-대규모프로젝트에 필요한 비 기능적 기능도 제공
-
-오래되서 안정적인 운영 가능
-
-Spring 불편한거 없앰(XML 설정)
+* Netty
 
 
 
-# REST API Client 설치
+## IntellilJ로 실행하는 법
+
+* spring initializr로 프로젝트 다운받아서도 가능 -> 무료
+
+* IntelliJ에서 plugin 다운 받아서도 가능 -> 유료
+
+
+
+# REST API Client
 
 ## 용도
 
 웹 어플리케이션 테스트 용도
 
-## 방법
+## 설치 방법
 
 Chrome  웹 스토어 -> REST API Client 검색 -> Talent API Tester 추가
 
@@ -246,62 +226,89 @@ Resource Delete, Query Parameter(데이터가 작아서)
 
 
 
-## Response 내려주기
+# Response 내려주기
 
-### 1. ResponseEntity로 JSON으로 응답 -> 요걸 주로씀
+## 1. JSON으로 응답
 
-1. JSON으로 응답
+1. JSON Body에 자동으로 Entity 담기
 
-   return dto
+   1. Controller 매핑하기
 
-2. JSON 커스터마이징
+      ![image-20221209170305421](md-images/image-20221209170305421.png)
 
-   1. 함수 자료형 ResponseEntity<class이름>로 하기
-   2. 함수 매개변수는 dto
-   3. 함수 return 은 ResponseEntity.status().body
-      1. status(HttpStatus.선택) : 응답 상태메시지
-      2. body() : body에 적을거
+   2. dto 매핑
 
+      1. @JsonNaming : JSON(스네이크) -> dto(카넬) -> JSON(스네이크) 자동 매핑
+      2. @JsonInclude : null인거 출력 안하기
 
+      ![image-20221209170604948](md-images/image-20221209170604948.png)
 
-### 2.PageController로 응답하기
+      3. 변수, get 함수, set 함수
 
-클래스 위에 @Controller
+   3. JSON으로 응답 방법
 
-1.  html로 응답
-   1. RequestMapping("/경로")
-   2. 함수 return 이름.html
-   3. resource -> static 에 이름.html작성
-2. JSON Body로 응답 -> 보통 안함
-   1. @ResponseBody
-   2. 매핑 Annotation
-   3. 함수안에서 인스턴스 생성 후 -> 값 set -> return instance
+      1. dto(JSON Body)
+
+         ![image-20221209165838716](md-images/image-20221209165838716.png)
+
+      2. ResponseEntity(JSON Body + 상태메시지)
+
+         ![image-20221209165856303](md-images/image-20221209165856303.png)
 
 
 
-## 모범 사례
+## 2.Html로 응답
 
-1. ObjectMapper 클래스
+1. @Controller
 
-   1. 함수 
+2. @RequestMapping
+
+3. resources -> static -> main.html로 응답
+
+   ![image-20221209171944642](md-images/image-20221209171944642.png)
+
+4. 선택(JSON Body에 추가)
+
+   ![image-20221209171830921](md-images/image-20221209171830921.png)
+
+# Object Mapper
+
+1. dto 클래스 구현
+
+   1. 타입 변수
+   2. 생성자(디폴트, 기타)
+   3. get 함수
+
+2. ObjectMapper 클래스
+
+   1. ObjectMapper 생성
+
+      ![image-20221209203501826](md-images/image-20221209203501826.png)
+
+   2. 함수 
 
       1. writeValueAsString(dto 인스턴스 이름) : object -> text
+
+         ![image-20221209203255764](md-images/image-20221209203255764.png)
+
       2. readValue(text이름, dto클래스이름.class) : text -> object
 
-   2. 주의점
+         ![image-20221209203318050](md-images/image-20221209203318050.png)
 
-      1. object -> text
+3. 주의점
 
-         get메소드 있어야 됨
+   1. object -> text
 
-      2. text -> object 
+      get메소드 있어야 됨(get함수 외에 함수명에  get들어가면 안 됨)
 
-         디폴트 생성자 있어야 됨
+   2. text -> object 
 
-2. dto 함수 만들 때 get들어가면 안 됨
+      디폴트 생성자 있어야 됨
 
-3. 변수이름 matching(카넬, 스네이크)
+      ![image-20221209204016545](md-images/image-20221209204016545.png)
 
-   매칭 시킬 변수마다 JsonProperty("json에서 작성한 key이름")로 설정
+   3. 변수이름 matching(카넬, 스네이크)
+
+      매칭 시킬 변수마다 @JsonProperty(name="json에서 작성한 key이름")로 설정
 
    

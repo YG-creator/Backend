@@ -14,17 +14,15 @@ Spring Security
 
 # 특징
 
-테스트의 용이성, 느슨한 결합
+* 테스트의 용이성, 느슨한 결합
 
-DI
+* DI
 
-AOP -> 로깅, 트랜잭션 처리, 시큐리티
+* AOP -> 로깅, 트랜잭션 처리, 시큐리티
 
 ![image-20220901162533495](md-images/image-20220901162533495.png)
 
-
-
-# IoC / DI
+## IoC / DI
 
 1. IoC(Inversion of Control)
 
@@ -67,9 +65,7 @@ AOP -> 로깅, 트랜잭션 처리, 시큐리티
 
 
 
-
-
-# AOP
+## AOP
 
 AOP(Aspect Oriented Programming) 관점지향 프로그램
 
@@ -334,7 +330,7 @@ public class Main {
 
 
 
-# 자주사용하는 Anotation
+# 자주 사용하는 Anotation
 
 ![image-20220902142315559](md-images/image-20220902142315559.png)
 
