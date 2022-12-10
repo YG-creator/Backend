@@ -10,16 +10,14 @@ dto의 변수에 Annotation
 
 
 
-
-
-# Spring Boot Custom Validation
+## Custom
 
 1. AssertTrue / False 와 같은 메소드 지정을 통해서 Custom Logic 적용 가능 -> 재사용 불가
 2. ConstraintValidator를 적용하여 재사용이 가능한 Custom Logic 적용 가능 -> 재사용 가능
 
 
 
-# Spring Boot Exception 처리
+## Spring Boot Exception 처리
 
 1. @ControllerAdvice : Global 예외 처리 및 특정 Package / Controller 예외 처리
 
@@ -52,7 +50,7 @@ dto의 변수에 Annotation
 
    
 
-# Spring Boot Validation 모범 사례
+## 모범 사례
 
 1. Controller Validation
 
