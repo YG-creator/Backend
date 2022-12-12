@@ -327,13 +327,3 @@ public class Main {
 ```
 
 +json validator 사용해서 json 이쁘게 보기 가능
-
-
-
-# 자주 사용하는 Anotation
-
-![image-20220902142315559](md-images/image-20220902142315559.png)
-
-![image-20220902142355371](md-images/image-20220902142355371.png)
-
-.
