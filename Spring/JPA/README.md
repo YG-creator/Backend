@@ -74,5 +74,283 @@
 
 
 
-# H2 DB 및 로그 설정
+# H2 DB
 
+## 개념
+
+Java 기반의 경량화된 DB 
+
+파일로 저장해서 데이터 유지 가능
+
+메모리 DB롤 사용해서 Instance가 동작할 때만 유지 가능
+
+
+
+## 설정
+
+1. build.gralde -> dependencies에 runtimeOnly 'com.h2database:h2' 있는지 확인
+
+2. resources -> application.yml 생성(계층화 가능해서 application properties보다 많이 사용)
+
+   1. h2 사용 설정
+
+      ```yml
+      spring:
+      	h2:
+      		console:
+      			enabled: true
+      ```
+
+   2. server
+
+      ```yml
+      server:
+      	port: 8080
+      ```
+
+   3. jpa 쿼리 보여주기 + 보기 좋은 형식에 맞게
+
+      ```yml
+      jpa:
+      	show-sql: true
+      	properties:
+      		hibernate:
+      			format_sql: true
+      ```
+
+      
+
+3. 실행
+
+4. 사용법
+
+   1. 브라우저
+
+      웹 브라우저에 URL 입력 -> IntelliJ에서 h2-console에 있는 'jdbc~' 복사 -> 웹브라우저 JDBC URL에 붙여넣기 -> 웹브라우저에서 사용가능
+
+   2. IntelliJ
+
+      IntelliJ 우측 Database 클릭 -> + 버튼 클릭 -> Data Source -> H2 클릭 -> Connection type : In-memory로 설정 -> 복사한 URL 붙여넣기 -> Test Connection 클릭 -> OK 클릭
+
+
+
+
+
+# Repository Interface
+
+## 계층 살펴보기
+
+1. dependencies 확인
+
+![image-20221214173758611](md-images/image-20221214173758611.png)
+
+2. dto 작성
+
+   @Entity : PK 설정
+
+   @Id : PK로 설정
+
+   @GenerateValue : 자동 증가
+
+3. repository interface 생성
+
+   extends JpaRepository<dto 타입,PK 타입>
+
+4. 테스트 생성(Cntrl + shift + t )
+
+   @Autowired   -> 작성한 repository
+
+   @Test -> JpaRepository interface의 save(), findAll() 사용해봄
+
+   
+
+## 메소드 실습
+
+### 데이터 미리 만들어두기
+
+1. resources -> data.sql 생성
+
+   test할거면 test에 생성해야 됨
+
+2. data.sql 작성
+
+   ```yml
+   //PK 자동증가
+   call next value for hibernate_sequence
+   // 데이터 값 삽입
+   insert into (~) values 
+   ```
+
+
+
+### Select
+
+* findAll() : 모두 출력
+
+* findAll(Sort.by(Direction.DESC, "속성이름")) : 내림차순 정렬 후 모두 출력
+
+  stream 사용하면 편함  -> .forEach(System.out::println)
+
+* findAllById(Lists.newArrayList(PK값들)) : 한번에 여러개 찾기
+
+* findById(PK값) : 조건에 맞는거 찾기
+
+  findAllById는 직접 찾음
+
+* getOne(PK값) : 조건에 맞는거 찾기
+
+  getOne은 proxy한테 시킴 -> session 필요(@Transactional)
+
+* 위 함수 뒤 + .orElse(null) : 존재하지 않으면 null 반환
+
+* count() : 갯수
+
+* existsById() : 존재하는지 확인 -> 결과는 count로 나옴
+
+
+
+### Insert
+
+* saveAll(Lists.newArrayLIst(인스턴스 여러개))
+
+* save(인스턴스)
+
+
+
+### Update
+
+1. 찾기
+
+   ```java
+   User user = userRepository.findById("PK값").orElseThrow(RuntimeException::new);
+   ```
+
+2. set함수로 변경
+
+   ```java
+   user.setEmail("값");
+   ```
+
+3. save() 
+
+   1. id값이 null이면 insert
+   2. id값이 null이 아니면 update
+
+   ```java
+   userRepository.save(user);
+   ```
+
+   
+
+
+
+### Delete
+
+* delete(repository이름.findById(PK값).orElseThrow(RuntimeException::new))
+
+  조건에 만족하는거 찾아서 지우기
+
+  null이면 안되서 orElseThrow
+
+* deleteById(PK값)
+
+* deleteAll()  
+
+  하나씩 찾아서 지움
+
+* deleteAllInBatch() 
+
+  안찾고 다 지움
+
+  
+
+### Commit
+
+* flush() : commit
+
+
+
+### Paging
+
+1. 가져오기
+
+   * Page<dto타입> 이름 = repository이름.findAll(PageREquest.of(원하는 페이지, 크기))
+
+     페이지는 0부터 시작
+
+2. 출력
+
+   * 이름
+
+     페이지, ~의 instance인지
+
+   * 이름.getTotalElements()
+
+     총 record 갯수
+
+   * 이름.getTotalPages()
+
+     전체 페이지
+
+   * 이름.getNumberOfElements()
+
+     현재 가져온 record 갯수
+
+   * 이름.getSort()
+
+     정렬 여부
+
+   * 이름.getSize()
+
+     페이지 크기
+
+
+
+## ExampleMatcher
+
+조건절 쿼리문, 많이 쓰이지는 않음
+
+1. instance 생성
+
+   조건값
+
+   ```java
+   User user = new User();
+   user.setEmail("slow");
+   ```
+
+2. ExampleMatcher 생성
+
+   조건
+
+   ```java
+   EmmapleMatcher matcher = EmmapleMatcher.matching().witMatcher("속성이름",contains());
+   ```
+
+3. Example 생성
+
+   조건 적용하기
+
+   ```java
+   Example example = Example.matching().of(user,matcher);
+   ```
+
+4. findAll(example)
+
+   결과물
+
+   ```java
+   userRepository.findAll(example).forEach(System.out::println);
+   ```
+
+   
+
+
+
+## SimpleJpaRepository
+
+JpaRepository 구현체
+
+함수 작동원리 알 수 있음
+
+읽어보셈
