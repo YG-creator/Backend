@@ -1,58 +1,123 @@
 # 개념
 
-* ORM(Object Relation Mapping) 
-
-  객체와 DB 연결
-
-* JPA(Java Persistence API) 
-
-  * 현재 Java 진영의 ORM 표준으로 채택
-
-  * persistence 영역 즉 데이터 접근하기 위한 API 규격을 인터페이스로 정의 ex) EntityManger
-
-  * ORM이 전체적인 개념, JPA는 구체적으로 그 기능을 정의한 stack
-
-* Hibernate 
-
-  JPA 실제 구현체
-
-* Spring Data Jpa 
-
-  Spring에서 Hibernate를 편리하게 사용하기 위해서 HIbernate를 추상객체로 감쌈
-
 ![image-20221213210940216](md-images/image-20221213210940216.png)
+
+## ORM(Object Relation Mapping) 
+
+* 객체와 DB 연결
+
+
+
+## JPA(Java Persistence API) 
+
+* 현재 Java 진영의 ORM 표준으로 채택
+
+* persistence 영역 즉 데이터 접근하기 위한 API 규격을 인터페이스로 정의 ex) EntityManger
+
+* ORM이 전체적인 개념, JPA는 구체적으로 그 기능을 정의한 stack
+
+## Hibernate 
+
+* JPA 실제 구현체
+
+
+
+## Spring Data Jpa 
+
+* Spring에서 Hibernate를 편리하게 사용하기 위해서 HIbernate를 추상객체로 감쌈
+
+
+
+## H2 DB
+
+* Java 기반의 경량화된 DB 
+
+* 파일로 저장해서 데이터 유지 가능(data.sql)
+
+* 메모리 DB롤 사용해서 Instance가 동작할 때만 유지 가능
+* 사용법
+
+
 
 # 세팅
 
-1. Spring boot project 생성
+1. Spring boot project 생성(dependencies)
 
    IntellilJ -> Spring Initializr -> Group, rtifact, Gradle, Java 8, jar -> Developer Tools - Lombok, Web - Spring Web, SQL - Spring Data JPA, H2 Database -> next -> finish
 
-2. build.gradle dependencies, External libraries 확인
+2. build.gradle -> dependencies 확인
 
-3. controller class 생성
+   ![image-20221214173758611](md-images/image-20221214173758611.png)
 
-   @RestConroller
+3. 사용 설정
 
-   @GetMapping
+   resources -> application.yml 생성(계층화 가능해서 application properties보다 많이 사용)
 
-4. junit5(cntrl + shift + t)으로 test하기
+   1. h2 사용 설정 작성
 
-   @WebMvcTest
+      ```yml
+      spring:
+      	h2:
+      		console:
+      			enabled: true
+      ```
 
-   @Auto wired - MockMvc
+   2. server 
 
-   @Test
+      ```yml
+      server:
+      	port: 8080
+      ```
 
-   .perform()
+   3. jpa 쿼리 보여주기 + 보기 좋은 형식에 맞게
 
-   .andDo()
+      ```yml
+      jpa:
+      	show-sql: true
+      	properties:
+      		hibernate:
+      			format_sql: true
+      ```
 
-   .adnExpect()
 
 
 
-# Lombok
+# H2 DB 사용법
+
+1. 브라우저
+
+   웹 브라우저에 URL 입력 -> IntelliJ에서 h2-console에 있는 'jdbc~' 복사 -> 웹브라우저 JDBC URL에 붙여넣기 -> 웹브라우저에서 사용가능
+
+2. IntelliJ
+
+   IntelliJ 우측 Database 클릭 -> + 버튼 클릭 -> Data Source -> H2 클릭 -> Connection type : In-memory로 설정 -> 복사한 URL 붙여넣기 -> Test Connection 클릭 -> OK 클릭
+
+
+
+# Data.sql
+
+영속성 부여
+
+1. resources -> data.sql 생성
+
+   test할거면 test에 생성해야 됨
+
+2. data.sql 작성
+
+   ```yml
+   //PK 자동증가
+   call next value for hibernate_sequence
+   // 데이터 값 삽입
+   insert into (~) values 
+   ```
+
+
+
+
+
+# Dto
+
+## Lombok
 
 @Getter : get 함수
 
@@ -74,77 +139,56 @@
 
 
 
-# H2 DB
+## Entity 기본속성
 
-## 개념
+* @Entity : PK 사용
 
-Java 기반의 경량화된 DB 
+* @Id : PK
 
-파일로 저장해서 데이터 유지 가능
+* @GeneratedValue : 자동증가
 
-메모리 DB롤 사용해서 Instance가 동작할 때만 유지 가능
+* @Column : DB에서의 column 설정
 
+  * name
+  * unique
+  * nullable
+  * insertable
+  * updatable
+  * length
 
+* @NonNull
 
-## 설정
+* @Table
 
-1. build.gralde -> dependencies에 runtimeOnly 'com.h2database:h2' 있는지 확인
+  * name : 테이블 이름
 
-2. resources -> application.yml 생성(계층화 가능해서 application properties보다 많이 사용)
+    name = "테이블이름"
 
-   1. h2 사용 설정
+  * indexes : index -> 실제 DB와 다를 수 있음(잘안씀)
 
-      ```yml
-      spring:
-      	h2:
-      		console:
-      			enabled: true
-      ```
+    @Index(columnList = "속성이름")}
 
-   2. server
+  * uniqueContraints : unique 제약사항 -> 실제 DB와 다를 수 있음(잘안씀)
 
-      ```yml
-      server:
-      	port: 8080
-      ```
+    uniqueConstraints = {@UniqueContraint(columnNames = {"속성이름"})}
 
-   3. jpa 쿼리 보여주기 + 보기 좋은 형식에 맞게
-
-      ```yml
-      jpa:
-      	show-sql: true
-      	properties:
-      		hibernate:
-      			format_sql: true
-      ```
-
-      
-
-3. 실행
-
-4. 사용법
-
-   1. 브라우저
-
-      웹 브라우저에 URL 입력 -> IntelliJ에서 h2-console에 있는 'jdbc~' 복사 -> 웹브라우저 JDBC URL에 붙여넣기 -> 웹브라우저에서 사용가능
-
-   2. IntelliJ
-
-      IntelliJ 우측 Database 클릭 -> + 버튼 클릭 -> Data Source -> H2 클릭 -> Connection type : In-memory로 설정 -> 복사한 URL 붙여넣기 -> Test Connection 클릭 -> OK 클릭
-
-
+* Enumerated : 속성값 string으로 가져오기
+  1. enum class 생성
+  2. dto에 @Enumerated(value = EnumType.STRING)  
 
 
 
 # Repository Interface
 
-## 계층 살펴보기
-
 1. dependencies 확인
 
-![image-20221214173758611](md-images/image-20221214173758611.png)
+   spring-boot-starter(data,web,test)
 
-2. dto 작성
+   lombok
+
+   h2database
+
+2. dto class 작성
 
    @Entity : PK 설정
 
@@ -152,33 +196,17 @@ Java 기반의 경량화된 DB
 
    @GenerateValue : 자동 증가
 
-3. repository interface 생성
+3. repository interface 작성
 
    extends JpaRepository<dto 타입,PK 타입>
 
-4. 테스트 생성(Cntrl + shift + t )
+   사용할 쿼리 메소드 등록
 
-   @Autowired   -> 작성한 repository
+4. 사용
 
-   @Test -> JpaRepository interface의 save(), findAll() 사용해봄
+   @Autowired -> 작성한 repository
 
-
-
-
-## 데이터 미리 만들어두기
-
-1. resources -> data.sql 생성
-
-   test할거면 test에 생성해야 됨
-
-2. data.sql 작성
-
-   ```yml
-   //PK 자동증가
-   call next value for hibernate_sequence
-   // 데이터 값 삽입
-   insert into (~) values 
-   ```
+   repository이름.쿼리메소드
 
 
 
@@ -226,12 +254,6 @@ Java 기반의 경량화된 DB
 ## SimpleJpaRepository
 
 JpaRepository 구현체
-
-함수 작동원리 알 수 있음
-
-읽어보셈
-
-
 
 
 
@@ -571,3 +593,127 @@ JpaRepository 구현체
 
        페이지 크기
 
+
+
+# Entity Listener
+
+* event발생하면 특정 동작 진행
+
+* 종류 
+  * @Pre/Post : 전/후
+    * Persist : insert
+    * Update : merge
+    * Remove : delete
+  * @PostLoad : select조회 직후
+
+* 방법
+
+  1. 직접 만들기
+
+     1. EntityListener 작성
+
+        @Pre/Post ~
+
+        함수 작성
+
+     2. dto에 EntityListener(value = EntityListener이름.class)
+
+  2. 기존거 사용
+
+     1. dto class 위에 EntityListener(value = AuditingEntityListener이름.class)
+     2. dto 변수 위에 Annotation 추가
+        * @CreatedDate : when create
+        * @LastModifiedDate : when update
+        * @CreatedBy : whoe create
+        * @LastModifiedBy : who update
+
+* 실습
+
+  데이터 변경시간 추적하기
+
+  데이터 변경 history 쌓기
+
+* 실제 : dto변경 안하고 상속받음
+
+  1. dto 작성
+
+     ```java
+     public enum Gender {
+         MALE,
+         FEMALE
+     }
+     ```
+
+     ```java
+     @Entity									// Entity 
+     @NoArgsConstructor						// default 생성자
+     @Data									// getter + setter
+     @ToString(callSuper = true)				// 상위클래스 포함 toString
+     @EqualsAndHashCode(callSuper = true)	// 상위클래스 포함 EqualsAndHashCode
+     public class UserHistory extends BaseEntity {	
+         @Id														// PK
+         @GeneratedValue(strategy = GenerationType.IDENTITY)		// 자동증가
+         private Long id;
+     
+         private String name;
+     
+         private String email;
+     
+         @Enumerated(value = EnumType.STRING)					// enum값 string 으로
+         private Gender gender;
+     }
+     ```
+
+  2. 상위클래스 작성 - listener 사용
+
+     ```java
+     @Data													// getter + setter
+     @MappedSuperclass										// 상속받는 class의 column에 추가
+     @EntityListeners(value = AuditingEntityListener.class)	// spring에 있는 EntityListeners 사용
+     public class BaseEntity{
+         @CreatedDate		// 생성시
+         private LocalDateTime createdAt;
+     
+         @LastModifiedDate	// 변경시
+         private LocalDateTime updatedAt;
+     }
+     ```
+
+  3. repositoy interface 작성
+
+     ```java
+     public interface UserHistoryRepository extends JpaRepository<UserHistory, Long> {
+     }
+     ```
+
+  4. 사용
+
+     ```java
+     @SpringBootTest		// 모든 Bean 가져옴
+     class UserRepositoryTest {
+         @Autowired
+         private UserRepository userRepository;
+         @Autowired		// Bean 채움
+         private UserHistoryRepository userHistoryRepository;
+     
+         @Test
+         void userHistoryTest() {
+             // 생성
+             User user = new User();
+             user.setEmail("martin-new@fastcampus.com");
+             user.setName("martin-new");
+             userRepository.save(user);
+     		
+             // 수정
+             user.setName("martin-new-new");
+             userRepository.save(user);
+     		
+             // 출력
+             userHistoryRepository.findAll().forEach(System.out::println);
+         }
+     }
+     ```
+
+     
+
+  
