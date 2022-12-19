@@ -13,118 +13,126 @@ draw.io 웹 어플리케이션 사용
 
 
 
-## Dto 작성
+# Dto 작성
 
 ```java
-@Entity
-@NoArgsConstructor
-@Data
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@Entity	// 테이블
+@NoArgsConstructor	// default 생성자
+@Data	// getter, setter
+@ToString(callSuper = true)	// 상속변수 포함 toString
+@EqualsAndHashCode(callSuper = true)	// 상속변수 포함 equals,hashcode
 public class BookReviewInfo extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Id	// PK
+    @GeneratedValue(strategy = GenerationType.IDENTITY)	// 자동증가
+    private Long id;	
 
-	// 관계
+	// 그 외 속성변수
     
-    // 변수
+    // 관계, 연관관계있는 변수
 }
 ```
 
 
 
-# 1:1 연관관계
+## 관계
 
-## 사용법
+```java
+// 1 : 1
+@OneToOne
 
-1. dto
+// 1 : N
+@OneToMany
 
-   ```java
-   @OneToONe(기본속성)
-   private dto타입 이름
-   ```
+// N : 1 
+@ManyToOne
 
-   * OnetoOne 기본속성
+// N : M
+// 중간테이블 생성되서 많이 안씀
+@ManyToOne
+```
 
-     * null 비허용 : optional = false
 
-     * 연관 관계는 있으나 table에는 FK 없음 : mappedBy = 'table 이름'  
-       * 조회 쿼리는 가능
 
-   * toString 순환참조 때문에 error 발생 -> @ToString.Exclude 추가로 해결
+## 설정
+
+```java
+// 관계 기본속성
+@관계(mappedBy = 'table 이름') // 조회는 되나 테이블 속성에는 없음
+@관계(optional = false) // 조회는 되나 테이블 속성에는 없음   
+
+// error 처리
+@ToString.Exclude // 순환참조 -> stackOverFlow error
+@Transactional // LazyInitializationException error
+@JoinColumn(name = "author_id") // join 연산시 식별못하는 경우 처리
+private List<dto타입> 이름 = new ArrayList<>(); // null 에러처리
+```
 
 
 
 ## 주의사항
 
-1. primitive vs reference type
+1. 변수타입
 
-   primitive 타입 -> null이면 허용 -> 0
+   1. primitive 타입 -> null이면 허용 -> 0
 
-   ex) int
+      ex) int
 
-   reference 타입 -> null이면 허용안함 -> error
+   2. reference 타입 -> null이면 허용안함 -> error
 
-   ex) Integer
+      ex) Integer
 
-   
+2. data.sql 자동증가 설정 
 
-2. 자동증가
+   hibernate 설정 지우기
 
-   @GeneratedValue(strategy =- GenerationType.IDENTITY)
+3. N : M -> 1 : N, 1 : N
 
-   data.sql - hibernate 지우기
-
-
-
-# 1:N 연관관계
-
-1. dto
+   자동으로 중간테이블이 생성이 되어서 컨트롤 못함 -> 중간테이블 직접 생성
 
    ```java
-   @OneToMany(fetch = FetchType.EAGER)	// 1 : N, LazyInitializationException 에러처리
-   @JoinColumn(name = "FK이름", insertable = false, updatable = false)	// join 에러처리, 삽입, 업데이트 불가
-   @ToString.Exclude		// toString에서 제외시키기
-   private List<dto타입> 이름 = new ArrayList<>(); // null 에러처리
+   @Entity
+   @NoArgsConstructor
+   @Data
+   @ToString(callSuper = true)
+   @EqualsAndHashCode(callSuper = true)
+   public class Book extends BaseEntity {
+   	@OneToMany
+       @JoinColumn(name = "book_id")
+       @ToString.Exclude
+       private List<BookAndAuthor> bookAndAuthors = new ArrayList<>();
+   }
    ```
-
-   * OneToMany 기본속성
-
-     * null 비허용 : optional = false
-
-     * 연관 관계는 있으나 table에는 FK 없음 : mappedBy = 'table 이름'  
-       * 조회 쿼리는 가능
-
-   * toString 순환참조 때문에 error 발생 -> @ToString.Exclude 추가로 해결
-
-# N:1 연관관계
-
-1. dto
 
    ```java
-   @ManyToOne			// M : 1 관계
-   @ToString.Exclude	// toString에서 제외시키기
-   private Publisher publisher;
+   @Entity
+   @NoArgsConstructor
+   @Data
+   @ToString(callSuper = true)
+   @EqualsAndHashCode(callSuper = true)
+   public class Author extends BaseEntity {
+   	@OneToMany
+       @JoinColumn(name = "author_id")
+       @ToString.Exclude
+       private List<BookAndAuthor> bookAndAuthors = new ArrayList<>();
+   }
    ```
-
-   * ManyToOne기본속성
-
-     * null 비허용 : optional = false
-
-     * 연관 관계는 있으나 table에는 FK 없음 : mappedBy = 'table 이름'  
-       * 조회 쿼리는 가능
-
-   * toString 순환참조 때문에 error 발생 -> @ToString.Exclude 추가로 해결
-
-
-
-# N:M 연관관계
-
-1. dto
 
    ```java
+   @Entity
+   @NoArgsConstructor
+   @Data
+   @ToString(callSuper = true)
+   @EqualsAndHashCode(callSuper = true)
+   public class BookAndAuthor extends BaseEntity {
+       @Id
+       @GeneratedValue(strategy = GenerationType.IDENTITY)
+       private Long id;
    
+       @ManyToOne
+       private Book book;
+   
+       @ManyToOne
+       private Author author;
+   }
    ```
 
-   
