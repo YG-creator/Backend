@@ -172,7 +172,7 @@ repository에 @Query(value = "jpql") 추가해서 custom
 
 1. 정방향, 역방향 둘다 구현해야 됨
 
-2. autoapply는 개발자가 생성한 class에 한해서 사용해야 됨
+2. autoApply는 개발자가 생성한 class에 한해서 사용해야 됨
 
 
 
