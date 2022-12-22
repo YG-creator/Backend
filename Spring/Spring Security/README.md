@@ -298,7 +298,7 @@ http.headers().disable()
 
 - GET /logout 을 처리
 - POST /logout 을 요청할 수 있는 UI 를 제공
-- DefaultLoginPageGeneratingFilter 를 사용하는 경우에 같이 제공됨.
+- DefaultLoginPageGeneratingFilter 를 사용하는 경우에 같이 제공됨
 
 
 
@@ -343,3 +343,568 @@ http.headers().disable()
 
   - void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException;
   - SimpleUrlLogoutSuccessHandler
+
+
+
+## 기본 로그인 실습
+
+1. build.gradle
+
+   * thymeleaf 에 대한 의존성 추가
+
+   ```gradle
+   dependencies {
+       implementation("$boot:spring-boot-starter-web")
+       implementation("$boot:spring-boot-starter-thymeleaf")
+       implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
+       implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
+   
+   }
+   ```
+
+   
+
+2. application.yml
+
+   * 서버포트 설정
+
+   ```yml
+   server:
+     port: 9051
+   
+   spring:
+     devtools:
+       livereload:
+         enabled: true
+       restart:
+         enabled: true
+   ```
+
+
+
+3. controller
+
+   * mapping
+   * 접근제한
+
+   ```java
+   @Controller
+   public class HomeController {
+   
+       @GetMapping("/")
+       public String main(){
+           return "index";
+       }
+   
+       @GetMapping("/login")
+       public String login(){
+           return "loginForm";
+       }
+   
+       @GetMapping("/login-error")
+       public String loginError(Model model){
+           model.addAttribute("loginError", true);
+           return "loginForm";
+       }
+   
+       @GetMapping("/access-denied")
+       public String accessDenied(){
+           return "AccessDenied";
+       }
+   
+       @PreAuthorize("hasAnyAuthority('ROLE_USER')")	// 접근제한
+       @GetMapping("/user-page")
+       public String userPage(){
+           return "UserPage";
+       }
+   
+       @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")	// 접근제한
+       @GetMapping("/admin-page")
+       public String adminPage(){
+           return "AdminPage";
+       }
+   
+   
+       @ResponseBody
+       @GetMapping("/auth")
+       public Authentication auth(){
+           return SecurityContextHolder.getContext().getAuthentication();
+       }
+   
+   }
+   ```
+
+   
+
+4. config
+
+   * 사용자 정보 추가
+   * resource 가져오기
+   * 권한 부여
+   * 권한 상속
+   * 성공시 페이지 이동
+   * 실패시 페이지 이동
+
+   ```java
+   @EnableWebSecurity(debug = true)
+   @EnableGlobalMethodSecurity(prePostEnabled = true)
+   public class SecurityConfig extends WebSecurityConfigurerAdapter {
+   	// CustomAuthDetail
+       private final CustomAuthDetail customAuthDetail;
+       public SecurityConfig(CustomAuthDetail customAuthDetail) {
+           this.customAuthDetail = customAuthDetail;
+       }
+   	
+       // 사용자 정보 추가
+       @Override
+       protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+           auth
+                   .inMemoryAuthentication()
+                   .withUser(
+                           User.withDefaultPasswordEncoder()	// withDefaultPasswordEncoder는 테스트시만 사용(불안전)
+                                   .username("user1")
+                                   .password("1111")
+                                   .roles("USER")
+                   ).withUser(
+                   User.withDefaultPasswordEncoder()
+                           .username("admin")
+                           .password("2222")
+                           .roles("ADMIN")
+           );
+       }
+   	
+       // admin에 user 권한 상속
+       @Bean
+       RoleHierarchy roleHierarchy(){
+           RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+           roleHierarchy.setHierarchy("ROLE_ADMIN > ROLE_USER");
+           return roleHierarchy;
+       }
+   	
+       // 권한 부여, 성공시, 실패시
+       @Override
+       protected void configure(HttpSecurity http) throws Exception {
+           http	
+                   .authorizeRequests(request->
+                       request.antMatchers("/").permitAll()	// 모두 접근 가능한 홈페이지
+                               .anyRequest().authenticated()	// 나머지는 인증이 필요
+                   )
+                   .formLogin(login->	
+                           login.loginPage("/login")		// 로그인페이지 설정
+                           .loginProcessingUrl("/loginprocess")
+                           .permitAll()					// 로그인도 인증 필요설정 해놓으면 무한루프
+                           .defaultSuccessUrl("/", false)	// 성공시 홈페이지가 아닌 눌렀던 페이지로 이동, 로그인 눌렀었으면 홈페이지로
+                           .authenticationDetailsSource(customAuthDetail)
+                           .failureUrl("/login-error")	// 실패시 login-error페이지로 이동
+                   )
+                   .logout(logout->	
+                           logout.logoutSuccessUrl("/"))	// 로그아웃 성공하면 홈페이지로
+                   .exceptionHandling(error->				// 접근 불가 페이지 설정
+                           error.accessDeniedPage("/access-denied")	
+                   )
+                   ;
+       }
+   	
+       // resource(css,js,images,jars)에 security 적용안하기 -> 권한 상관업이 사용가능
+       @Override
+       public void configure(WebSecurity web) throws Exception {
+           web.ignoring()
+                   .requestMatchers(
+                           PathRequest.toStaticResources().atCommonLocations()
+                   )
+           ;
+       }
+   
+   }
+   ```
+
+   
+
+5. html
+
+   * bootstrap 을 이용해 기본 페이지 제작
+
+     ```html
+     <html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+     <head>
+         <meta charset="UTF-8">
+         <title>Title</title>
+         <link rel="stylesheet" th:href="@{/css/bootstrap.css}">
+         <link rel="stylesheet" th:href="@{/css/login.css}">
+     </head>
+         
+     <body>
+     <script th:src="@{/js/bootstrap.js}" />
+     </body>
+     </html>
+     ```
+
+   * csrf 설정 
+
+     * 사용자 정보 가져오기위해 필요함
+
+     * th:action="@{경로}" 써서 csrf 토큰 설정
+
+       ```html
+       <form class="form-signin" method="post" th:action="@{/loginprocess}">
+       ```
+
+   * 로그인
+
+     * 로그인 안했을 때만 보임
+
+       sec:authorize="!isAuthenticated() 추가
+
+     ```html
+     <div class="link" sec:authorize="!isAuthenticated()">
+         <a href="/login">  로그인 </a>
+     </div>
+     ```
+
+   * 유저 페이지, 관리자 페이지
+
+     * 로그인 했을 때만 보임
+
+       sec:authorize="isAuthenticated() 추가
+
+     ```html
+     <div class="link" sec:authorize="authenticated">
+         <a href="/user-page">  유저 페이지  </a>
+     </div>
+     <div class="link" sec:authorize="authenticated">
+         <a href="/admin-page">  관리자 로그인 </a>
+     </div>
+     ```
+
+   * 로그아웃 
+
+     * 로그인 했을 때만 보임
+
+       sec:authorize="isAuthenticated() 추가
+
+     * csrf 설정
+
+       사용자 정보 가져오기위해 필요함
+
+       th:action="@{경로}" 써서 csrf 토큰 설정
+
+     ```html
+     <div class="link" sec:authorize="authenticated">
+         <form th:action="@{/logout}" method="post">
+             <button class="btn btn-info" type="submit">  로그아웃 </button>
+         </form>
+     </div>
+     ```
+
+     
+
+6. UserDetailsSource 설정
+
+   1. dto class 생성(detail 정보)
+
+      ```java
+      @Data
+      @AllArgsConstructor
+      @NoArgsConstructor
+      @Builder
+      public class RequestInfo {
+          private LocalDateTime loginTime;
+          private String remoteIp;
+          private String sessionId;
+      }
+      ```
+
+   2. CustomDetail class 생성
+
+      ```java
+      @Component
+      public class CustomAuthDetail implements AuthenticationDetailsSource<HttpServletRequest, RequestInfo> {
+      
+          @Override
+          public RequestInfo buildDetails(HttpServletRequest request) {
+              return RequestInfo.builder()
+                      .loginTime(LocalDateTime.now())
+                      .remoteIp(request.getRemoteAddr())
+                      .sessionId(request.getSession().getId())
+                      .build();
+          }
+      }
+      ```
+
+   3. config class에 추가
+
+      ```java
+      // 주입
+      private final CustomAuthDetail customAuthDetail;	
+      
+      public SecurityConfig(CustomAuthDetail customAuthDetail) {
+          this.customAuthDetail = customAuthDetail;
+      }
+      ```
+
+      
+
+   
+
+# Authentication 메커니즘
+
+![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-6-Authentication.png)
+
+* 구성
+
+  * Credentials : 인증을 받기 위해 필요한 정보, 비번등 (input)
+
+  * Principal : 인증된 결과. 인증 대상 (output)
+
+  * Details : 기타 정보, 인증에 관여된 된 주변 정보들
+
+  * Authorities : 권한 정보들
+
+* Token
+
+  * Authentication 구현 객체
+
+* SecurityContextHolder 
+
+  * Authentication에 언제든 접근할 수 있도록 필터체인에서 보장
+
+* 인증 제공자(AuthenticationProvider)
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-7-AuthenticationProvider.png)
+
+  * 인증에 필요한 정보(credentials) 받아서 결과물(Principal을 줌
+  * 어떤 인증에 대해서 도장을 찍어줄지 AuthenticationManager 에게 알려줘야 하기 때문에 support() 라는 메소드를 제공
+  * 인증 대상과 방식이 다양할 수 있기 때문에 인증 제공자도 여러개 올 수 있음
+
+* 인증 관리자(AuthenticationManager)
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-8-AuthenticationManager.png)
+
+  * 인증 제공자들을 관리하는 인터페이스
+  * 인증 관리자를 구현한 객체가 ProviderManager
+  * 개발자가 직접 AuthenticationManager를 정의해서 제공하지 않는다면, AuthenticationManager 를 만드는 AuthenticationManagerFactoryBean 에서 DaoAuthenticationProvider 를 기본 인증제공자로 등록한 AuthenticationManage를 만든다.
+  * DaoAuthenticationProvider 는 반드시 1개의 UserDetailsService 를 발견할 수 있어야 한다. 만약 없으면 InmemoryUserDetailsManager 에 [username=user, password=(서버가 생성한 패스워드)]인 사용자가 등록되어 제공됩니다.
+
+
+
+## 실습
+
+1. Authentication 
+
+   1. token 구현 : Authentication 구현체()
+
+      * Credentials : 인증을 받기 위해 필요한 정보, 비번등 (input)
+      * Principal : 인증된 결과. 인증 대상 (output)
+      * Details : 기타 정보, 인증에 관여된 된 주변 정보들
+      * Authorities : 권한 정보들
+
+      ```java
+      @Data
+      @AllArgsConstructor
+      @NoArgsConstructor
+      @Builder
+      public class StudentAuthenticationToken implements Authentication {	// Authentication 구현
+      
+          private Student principal;
+          private String credentials;
+          private String details;
+          private boolean authenticated;
+          private Set<GrantedAuthority> authorities;
+      
+      
+          @Override
+          public String getName() {
+              return principal == null ? "" : principal.getUsername();
+          }
+      
+      }
+      ```
+
+   2. Principal(인증 결과물) dto 구현
+
+      ```java
+      @Data
+      @AllArgsConstructor
+      @NoArgsConstructor
+      @Builder
+      public class Student {	// Pricipal(인증 결과물)
+      
+          private String id;
+          private String username;
+          private Set<GrantedAuthority> role;
+      
+      }
+      ```
+
+      
+
+2. AuthenticationProvider 
+
+   * credentials가 있으면 -> Principal 제공
+   * supports
+   * 사용자 정보 입력
+
+   ```java
+   @Component
+   public class StudentManager implements AuthenticationProvider, InitializingBean {
+   
+       private HashMap<String, Student> studentDB = new HashMap<>();
+   	
+       @Override
+       public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+           StudentAuthenticationToken token = (StudentAuthenticationToken) authentication;
+           if(studentDB.containsKey(token.getCredentials())){	// 인증 성공
+               Student student = studentDB.get(token.getCredentials());
+               return StudentAuthenticationToken.builder()
+                       .principal(student)
+                       .details(student.getUsername())
+                       .authenticated(true)
+                       .authorities(student.getRole())
+                       .build();
+           }
+           return null;
+       }
+   
+       @Override
+       public boolean supports(Class<?> authentication) {
+           return authentication == StudentAuthenticationToken.class;
+       }
+   	
+       // 사용자 정보
+       @Override
+       public void afterPropertiesSet() throws Exception {
+           Set.of(
+                   new Student("hong", "홍길동", Set.of(new SimpleGrantedAuthority("ROLE_STUDENT"))),
+                   new Student("kang", "강아지", Set.of(new SimpleGrantedAuthority("ROLE_STUDENT"))),
+                   new Student("rang", "호랑이", Set.of(new SimpleGrantedAuthority("ROLE_STUDENT")))
+           ).forEach(s->
+               studentDB.put(s.getId(), s)
+           );
+       }
+   }
+   ```
+
+   
+
+3. AuthenticationManager : AuthenticationProvider 관리
+
+   1. config에 추가
+
+      ```java
+      	// DI
+      	private final StudentManager studentManager;
+          private final TeacherManager teacherManager;
+      
+          public SecurityConfig(StudentManager studentManager, TeacherManager teacherManager) {
+              this.studentManager = studentManager;
+              this.teacherManager = teacherManager;
+          }
+      
+      	// AuthenticationManager
+          @Override
+          protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+              auth.authenticationProvider(studentManager);
+              auth.authenticationProvider(teacherManager);
+          }
+      ```
+
+      
+
+4. CustomLoginFilter 
+
+   * UsernamePasswordAuthenticationFilter  custom함 
+
+   ```java
+   public class CustomLoginFilter extends UsernamePasswordAuthenticationFilter {
+   	
+       // 생성자
+       public CustomLoginFilter(AuthenticationManager authenticationManager){
+           super(authenticationManager);
+       }
+   	
+       // UsernamePasswordAuthenticationFilter custom
+       @Override
+       public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+           String username = obtainUsername(request);
+           username = (username != null) ? username : "";
+           username = username.trim();
+           String password = obtainPassword(request);
+           password = (password != null) ? password : "";
+           String type = request.getParameter("type");
+           if(type == null || !type.equals("teacher")){	// 맞는 Authentication 선택
+               // student
+               StudentAuthenticationToken token = StudentAuthenticationToken.builder()	// credentials
+                       .credentials(username).build();
+               return this.getAuthenticationManager().authenticate(token);				// pricipal
+           }else{
+               // teacher
+               TeacherAuthenticationToken token = TeacherAuthenticationToken.builder()	// credentials
+                       .credentials(username).build();
+               return this.getAuthenticationManager().authenticate(token);				// pricipal
+           }
+       }
+   
+   
+   }
+   ```
+
+   
+
+## 실제
+
+* AuthenticationProvider 보통 안건들임
+  * 보통 UserDetails 객체를 구현 -> UserDetailsService를 만들어서 Bean으로 제공 ->DaoAuthenticationProvider가 알아서함
+  * 즉 UserDetails를 구현하고, UserDetailsService 구현해서 Bean으로 제공하면 됨
+
+
+
+# Basic 토큰인증
+
+## BasicAuthenticationFilter
+
+* 로그인 페이지를 사용할 수 없는 상황에서 사용
+  * SPA 페이지 (react, angular, vue ...)
+  * 브라우저 기반의 모바일 앱(브라우저 개반의 앱, ex: inoic )
+
+* 사용방법
+
+  ```java
+  public class SecurityConfig extends WebSecurityConfigurerAdapter {
+  
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .httpBasic()
+                ;
+    }
+  }
+  ```
+
+* SecurityContext 에 인증된 토큰이 없다면 아래와 같은 포멧의 토큰을 받아서 인증처리를 하고 갑니다.
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-10-basic-authentication-filter-hello.png)
+
+* http 에서는 header 에 username:password 값이 묻어서 가기 때문에 보안에 매우 취약합니다. 그래서, 반드시 https 프로토콜에서 사용할 것을 권장
+
+* 최초 로그인시에만 인증을 처리하고, 이후에는 session에 의존
+
+* RememberMe 를 설정한 경우 session 만료가 되도 로그인 안해도 됨
+
+* 에러가 나면 401 (UnAuthorized) 에러 보냄
+
+* 로그인 페이지 처리
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-10-basic-filter-user.png)
+
+## SecurityContextPersistenceFilter
+
+* SecurityContext 를 저장하고 있는 저장소에서 만료되지 않은 인증이 있으면 SecurityContextHolder 에 넣어줌
+* 저장소가 반드시 세션일 필요는 없기 때문에 HttpSessionContextIntegrationFilter가 추상화된 객체로 발전된 필터
+
+
+
+## Bearer 토큰
+
+* JWT 토큰
+
+* Opaque 토큰
