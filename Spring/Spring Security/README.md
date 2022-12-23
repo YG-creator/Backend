@@ -908,3 +908,345 @@ http.headers().disable()
 * JWT 토큰
 
 * Opaque 토큰
+
+
+
+# 실습
+
+config에서 BasicAuthenticationFilter 사용
+
+inmemory
+
+
+
+## 로그인 ver 폼 로그인
+
+UsernamePasswordAuthenticationFilter 사용
+
+
+
+## 로그인 ver 클라이언트 로그인(웹, 모바일), inMemory
+
+BasicAuthenticationFilter 사용
+
+- 상황
+  - 웹으로 잘 만든 사이트를 모바일로도 서비스해야 한다.
+  - 그런데, 모바일 클라이언트 브라우저를 이용한 하이브리드 방식으로 개발을 한다. (세션이용이 가능함)
+  - 그런데, 시간이 없어서 JWT 토큰 기반으로 만들기가 어렵다.
+  - Basic 토큰을 이용해 기존 서비스를 api로 이용하고 싶다.
+- 시나리오
+  - 선생님과 학생이 각각 로그인을 한다.
+  - 선생님은 모바일을 통해 학생 리스트를 조회할 수 있다.
+
+* 구현하기
+
+  - 멀티 체인을 구성해 서비스를 서비스 한다.
+
+    ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-11-multichain.png)
+
+  - 웹 리소스를 재사용하기 위해 student-teacher 웹모듈을 만든다.
+
+
+
+## 로그인 ver 모바일, 웹, DB 
+
+* login-userdetails 폴더를 만든다.
+
+* user-admin comp 모듈을 만들고, SpUser, SpAuthority Entity와 Repository 를 만든다.
+
+* h2 DB 를 세팅한다.
+
+  
+
+1. login-basic 프로젝트의 리소스와 컨트롤러를 재사용
+
+2. build.gradle
+
+   * web-comonds.gradle거 적용
+
+   * 링크 추가
+
+     * web-user-admin 
+     * comp-user-admin
+
+   * spring-boot-starter-data-jpa
+
+   * h2database
+
+     ```java
+     dependencies{
+       runtime("com.h2database:h2")
+     }
+     ```
+
+     
+
+3. application.yml 설정
+
+   * server port 설정
+
+   * spring-devtools 설정
+
+   * thymeleaf 설정
+
+   * h2 db 설정
+
+     ```java
+     spring:
+       h2:
+         console:
+           enabled: true
+           path: /h2-console
+     
+       datasource:
+         url: jdbc:h2:mem:userdetails-test;
+         driverClassName: org.h2.Driver
+         username: sa
+         password:
+     
+       jpa:
+         database-platform: org.hibernate.dialect.H2Dialect
+     ```
+
+     
+
+     
+
+3.  SpUser - UserDetails 구현
+
+   * Set<SpAuthority> - OneToMany, join
+   * UserDetails  override
+   * 사용자 정보
+
+   ```java
+   @Entity
+   @Table(name="sp_user")
+   public class SpUser implements UserDetails {
+       @Id
+       @GeneratedValue(strategy = GenerationType.IDENTITY)
+       private Long userId;
+   
+       private String email;
+   
+       private String password;
+   
+       @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+       @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name="user_id"))
+       private Set<SpAuthority> authorities;
+   
+       private boolean enabled;
+   
+       @Override
+       public String getUsername() {
+           return email;
+       }
+   
+       @Override
+       public boolean isAccountNonExpired() {
+           return enabled;
+       }
+   
+       @Override
+       public boolean isAccountNonLocked() {
+           return enabled;
+       }
+   
+       @Override
+       public boolean isCredentialsNonExpired() {
+           return enabled;
+       }
+   }
+   ```
+
+   
+
+4. SpAuthority - GrantedAuthority 구현
+
+   * userId
+   * authority
+
+   ```java
+   @Entity
+   @Table(name="sp_user_authority")
+   @IdClass(SpAuthority.class)
+   public class SpAuthority implements GrantedAuthority {
+       @Id
+       @Column(name="user_id")
+       private Long userId;
+   
+       @Id
+       private String authority;
+   }
+   ```
+
+   
+
+5. SpUserRepository 구현
+6. SpUserService - UserDetailsService 구현
+   * SpUserRepository 함수 사용
+
+7. Security Config
+
+   * SpUserService 읽을 수 있도록 설정
+
+   * inMemory -> DB 전환 설정
+
+     userDetailService에 SpUserService 넣어주기
+
+   * h2 설정
+
+     path 열어주기
+
+   * encoder 
+
+   
+
+
+
+# 로그인을 지원하기 위한 필터들
+
+## 스프링이 지원하는 로그인 방식들
+
+- 스프링은 아래와 같은 로그인 방식들을 지원합니다.
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-5-2-user-login.png)
+
+- 스프링이 인증 처리는 세션과는 별도로 동작하도록 설계되어 있습니다. 그래서 session 을 사용하건 사용하지 않건 같은 Authentication과 AuthenticationProvider 를 사용할 수 있습니다.
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-13-spring-authentication.png)
+
+- 스프링의 인증을 유지시켜주기 위해서는 session 을 이용하는 것이 개발자에게는 여러모로 편리합니다. 이후 인증은 서버가 메모리를 소모해서 세션객체를 가지고 유지시켜주는 작업을 하도록 할 수 있습니다. 세션은 브라우저의 쿠키에 JSESSIONID 값을 심어놓고, 브라우저와 서버가 이 값을 주고 받으면서 세션을 보장받을 수 있습니다.
+
+- 그런데 서버의 세션 정책과 스프링의 인증 체계가 서로 맞물려 동작하도록 하려면 SecurityContextPersistenceFilter 와 RememberMeAuthenticationFilter, AnonymousAuthenticationFilter 등과 같이 인증을 보조해 주는 다른 필터들의 도움을 받아야 합니다.
+
+## SecurityContextPersistenceFilter
+
+- 세션 만료되면 못씀
+
+- SecurityContextRepository 에 저장된 SecurityContext 를 Request의 LocalThread에 넣어주었다가 뺏는 역할을 한다. doFilter 메소드를 따라가보면 알 수 있다. 세션에 SecurityContext를 보관했다가 다음 request에서 넣어줍니다.
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-14-securitycontext-persistence-filter.png)
+
+## RememberMeAuthenticationFilter
+
+- 세션 만료되도 사용가능
+
+- 인증 정보를 세션 관리하는 경우, 세션 timeout이 발생하게 도면, remember-me 쿠키를 이용해 로그인을 기억했다 자동으로 재로그인 시켜주는 기능입니다.
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-15-rememberme-filter.png)
+
+  - key : Hash 암/복호화에 사용할 키 값
+  - token-validity-seconds : 토큰 유효 기간
+  - authentication-success-handler-ref : 핸들러를 커스마이징 했다면 로그인 성공 후 수행할 로직
+  - user-service-ref : UserDetailsService를 커스터마이징 했을 경우 주입
+
+### TokenBasedRememberMeServices 
+
+- 상대방이 토큰만 알면 약용 가능 -> 비밀번호를 바꾸면 해결
+- 포멧 : 아이디:만료시간:Md5Hex(아이디:만료시간:비밀번호:인증키)
+- 만약 User가 password 를 바꾼다면 토큰을 쓸 수 없게 됩니다.
+- 기본 유효기간은 14일 이고 설정에서 바꿀 수 있습니다.
+- 약점 : 탈취된 토큰은 비밀번호를 바꾸지 않는한 유효기간동안 만능키가 됩니다.
+
+
+
+### PersistenceTokenBasedRememberMeServices:
+
+- 포멧 : series:token
+- 토큰에 username이 노출되지 않고, 만료시간도 노출되지 않습니다. 만료시간은 서버에서 정하고 노출하지 않고 서버는 로그인 시간만 저장합니다.
+- series 값이 키가 된다.
+- 재로그인이 될 때마다 token 값을 갱신
+- 다른 사용자 악용 + 정상 사용자가 재로그인 할 때 -> CookieTheftException 이 발생 -> remember-me 쿠키값들을 삭제 + 재로그인을 요청
+- 재시작 후에도 토큰을 남기고 싶다면 JdbcTokenRepository를 사용하거나 이와 유사한 방법으로 토큰을 관리해야 합니다.
+- 로그아웃하게 다른 곳에 묻혀놓은 remember-me 쿠키값도 쓸모가 없게 됩니다. 만약 다른 곳에서 remember-me로 로그인한 쿠키를 살려놓고 싶다면, series 로 삭제하도록 logout 을 수정해야 합니다.
+- 특징
+  - RememberMeAuthenticationToken을 사용, 사용자가 같아도 토큰이 다름
+
+
+
+## AnonymousAuthenticationFilter
+
+- 로그인 하지 않은 사용자 혹은 로그인이 검증되지 않은 사용자는 기본적으로 AnonymousAuthenticationToken 을 발급해 줍니다. anonymous를 허용한 곳만 다닐 수 있게 하겠다는 것입니다.
+- 익명사용자의 권한을 별도로 설정할 수 있고, 익명사용자에게 주는 principal 객체도 설계해서 대체해 줄 수 있습니다.
+
+
+
+
+
+# 세션 관리
+
+## 필요성
+
+모든 요청에 아이디/패스워드를 물어볼 수는 없음 -> 토큰 발급 -> 세션에 저장 -> 세션 탈취하면 악용가능 -> 세션관리 해야됨
+
+
+
+## ConcurrentSessionFilter
+
+- SessionRegistry 를 사용한다.
+
+  세션사용자(SessionInformation)를 모니터링
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-16-concurrent-session.png)
+
+- 세션 만료에 대한 판단은 SessionManagementFilter 의 ConcurrentSessionControlAuthenticationStrategy 에서 처리 -> 만료된 세션에 대한 요청인 경우 세션 즉시 종료
+
+- 문제점
+
+  - 서블릿 컨테이너(톰켓)로 부터 HttpSessionEventPublisher 를 리스닝 하도록 listener로 등록해야 합니다.
+  - 톰켓의 세션과는 별도로 session을 SessionRegistry의 SessionInformation 에서 관리합니다.
+  - SessionRegistry 의 세션 정보를 expire 시키면 톰켓에서 세션을 아무리 허용하더라도 애플리케이션 내로 들어와서 활동할 수 없습니다.
+  - SessionRegistry 에는 Authentication 으로 등록된 사용자만 모니터링 합니다.
+
+## SessionManagementFilter
+
+- SessionAuthenticationStrategy 에서 여러가지 세션 인증 정책을 관리하도록 설정할 수 있습니다.
+
+  - 세션 생성 정책
+  - 세션 아이디 고정 설정
+  - 동시접근 허용 문제
+  - 세션 타임아웃 문제
+
+  ```java
+  http
+    .sessionManagement(session->session
+        .sessionFixation(fix->fix.changeSessionId())
+        .maximumSessions(1)	// 최대세션 갯수
+        .key("remember-me")	// 세션 키
+        .tokenValiditySeconds(30*24*60*60)	// 세션 만료시간
+        .maxSessionsPreventsLogin(false)		// 새로들어온 세션 들어오면 세션 바꾸기
+        .expiredUrl("/session-expired")		// 세션 만료 처리
+    )
+  ```
+
+  
+
+  ![img](https://gitlab.com/jongwons.choi/spring-boot-security-lecture/-/raw/master/images/fig-17-session-management.png)
+
+- SessionFixationProtectionStrategy : 세션 고정 문제 해결
+
+  1. 브라우저로 서버에 접속합니다.
+  2. 정상 사용자의 브라우저에 내 브라우저의 세션값을 주입합니다.
+  3. 정상 사용자가 해당 사이트에 로그인 하기만 하면 내 브라우저로 마치 인증된 사용자인 것처럼 리소스에 접근할 수 있습니다.
+
+  - 해결방법 : 서버에서 로그인을 시도하면 이전 세션을 invalidate 시키고 새로운 세션을 만들어서 인증을 해줍니다.
+
+- ConcurrentSessionControlAuthenticationStrategy : 동시 세션의 개수 제한. RegisterSessionAuthenticationStrategy 와 함께 SessionRegistry 를 참조해 작업 합니다.
+
+- 세션 정책
+
+  - Always : 항상 세션을 생성함
+  - If_Required : 필요시 생성
+  - Never : 생성하지 않음. 존재하면 사용함.
+  - Stateless : 생성하지 않음. 존재해도 사용하지 않음.
+  - session
+
+
+
+## 실습
+
+- 실시간으로 로그인한 사용자들의 세션 개수와 로그인한 URL을 모니터링 한다.
+- 3명의 사용자를 만든다.
+- 동시접속 제어를 테스트 한다.
+- RememberMe 도 설정한다.
+- remember me를 설정했을때
