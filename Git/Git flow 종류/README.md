@@ -1,6 +1,6 @@
 # 1. Git
 
-<img src="md-images/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67.png" alt="img" style="zoom: 33%;" />
+<img src="md-images/687474703a2f2f6e7669652e636f6d2f696d672f6769742d6d6f64656c4032782e706e67.png" alt="img" style="zoom: 70%;" />
 
 * 사용처
 
@@ -8,7 +8,9 @@
 
 - 과정
 
-  feature → develop → release → hotfix → master
+  develope -> feature → develop → release → master
+
+  master -> hotfix -> master
 
   
 
@@ -65,14 +67,12 @@
 ![img](https://camo.githubusercontent.com/1206cff5e1da4b7ed742937a9234c6736c47db8866c3005ce0ae0266ad65c50f/68747470733a2f2f6d69726f2e6d656469756d2e636f6d2f6d61782f313136362f302a367054354834766e756a564c637930532e706e67)
 
 * Git과 차의점
-
+  * 소규모 프로젝트에 사용
   * Git flow의 hot fix, feature -> GitHub pull request  => 일반 프로젝트에 사용
-
   * Master 브랜치에서 새로운 브랜치 추가해서 버그 해셜 or 기능 추가,  이 때 branch 이름 commit 메세지 주의해서 지을 것
-
   * Merge 전에는 `pull request`를 통해 공유하여 코드 리뷰 -> Master 브랜치에 Merge 요청
-
   * Merge가 완료되면, push를 진행하고 자동으로 배포가 완료된다. 
+
 
 
 
