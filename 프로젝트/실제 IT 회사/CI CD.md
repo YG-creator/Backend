@@ -94,41 +94,41 @@ Compute
 
    7. update 하기
 
-      sudo apt update && sudo apt upgrade
+      `sudo apt update && sudo apt upgrade`
 
    8. java 설치
 
-      1. sudo apt install openjdk-11-jdk 
+      1. `sudo apt install openjdk-11-jdk `
 
-      2. Y
+      2. `Y`
 
       3. 설치 확인 
 
-         java-version
+         `java-version`
 
    9. ruby 설치
 
-      sudo apt install ruby-full
+      `sudo apt install ruby-full`
 
    10. wget 설치
 
-       sudo apt install wget
+       `sudo apt install wget`
 
    11. ubunto server로 이동 
 
-       cd /home/ubuntu
+       `cd /home/ubuntu`
 
    12. CodeDeploy 에이전트 설치
 
-       1. wget https://{bucket-name}.s3.{region-identifier}.amazonaws.com/latest/install
+       1. `wget https://{bucket-name}.s3.{region-identifier}.amazonaws.com/latest/install`
           * bucket-name과 region-identifier는 AWS CodeDeploy 참조해서 작성
 
-       2. chmod +x ./install
-       3. sudo ./install auto > /tmp/logfile
+       2. `chmod +x ./install`
+       3. `sudo ./install auto > /tmp/logfile`
 
    13. 서비스가 실행 중인지 확인
 
-       1. sudo service codedeploy-agent status
+       1. `sudo service codedeploy-agent status`
        2. active면 통과
 
    14. Instance에 역할 부여(IAM)
@@ -152,13 +152,13 @@ Compute
 
        1. ubunt 나오기
 
-          exit
+          `exit`
 
-       2. sudo ssh -i "EC2-KEY-PAIR.pom" utuntu@ec2-3-36-252-36.api-northeast-2.compute.amazonaws.com
+       2. `sudo ssh -i "EC2-KEY-PAIR.pom" utuntu@ec2-3-36-252-36.api-northeast-2.com`pute.amazonaws.com
 
        3. 컴퓨터 비밀번호 입력
 
-       4. sudo vi /etc/ssh/sshd_config
+       4. `sudo vi /etc/ssh/sshd_config`
 
        5. Passord 부분 yes 로 변경
 
@@ -166,31 +166,31 @@ Compute
 
        7. ubuntu에 권한 주기
 
-          sudo su -
+          `sudo su -`
 
        8. 비밀번호 변경
 
-          passwd ubuntu
+          `passwd ubuntu`
 
-          새 비밀번호 입력
+          `새 비밀번호 입력`
 
        9. 나가기
 
-          exit
+          `exit`
 
        10. key 없이 접속해보기
 
        1. 서비스 재시작
 
-          sudo service ssh restart
+          `sudo service ssh restart`
 
        2. 나가기
 
-          exit
+          `exit`
 
        3. 서비스에 접속
 
-          ssh utuntu@ec2-3-36-252-36.api-northeast-2.compute.amazonaws.com
+          `ssh utuntu@ec2-3-36-252-36.api-northeast-2.compute.amazonaws.com`
 
        4. 비밀번호 입력
 
