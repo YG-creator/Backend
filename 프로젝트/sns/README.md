@@ -1,5 +1,7 @@
 # 주제 sns 서비스
 
+https://github.com/KimHyoJin/Simple-SNS 참고
+
 
 
 # 사용기술
