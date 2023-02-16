@@ -20,7 +20,10 @@ https://github.com/KimHyoJin/Simple-SNS 참고
 # 구성
 
 1. 간단한 app 만들기
-   * 포스트 CRUD
+   * 회원가입
+   * 로그인
+   * 포스트 CR
+   * 내가 작성한 포스트 RUD
 2. 기능 추가
    * 좋아요
    * 댓글
