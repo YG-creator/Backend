@@ -652,3 +652,5 @@ repository를 사용하는 service(인수) 테스트
    1. 배포
    2. Jenkins 등과 같은 CI 도구로 Job 실행할 수 있도록 설정(관리 측면에서 CI tool 사용함)
    3. 다른 자원 환경에서 데이터를 읽고 쓰는 Job 구현(다른 DB)
+
+https://github.com/kjs92980/pass-batch
