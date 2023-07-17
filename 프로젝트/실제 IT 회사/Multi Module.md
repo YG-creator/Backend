@@ -369,7 +369,7 @@ module-api에서 진행
 
 ## Controller 구현
 
-module-common에서 구현
+module-api에서 구현
 
 1. Service 주입
 2. Mapping
@@ -377,7 +377,7 @@ module-common에서 구현
 
 
 
-## Scan 추가
+## Scan 범위 설정
 
 multimodule / application 에서 추가
 
@@ -512,3 +512,56 @@ multimodule / application 에서 추가
 
   
 
+
+
+# 사용 경험
+
+1. 멀티 모듈 생성 후 의존성 설정
+
+   1. module-api 생성
+   2. module-common 생성
+   3. moudle-api에 module-common 의존성 추가 by build.gradle
+
+2. Exception Handling
+
+   1. Response dto 작성
+   2. ErroCode 작성
+   3. CustomException에 ErroCode 필드 추가
+   4. GlobalExceptionHandler로 예외처리 + ResponseBody
+
+3. DB 연동
+
+   1. 설정
+
+      1. module-common/build.gradle에 DB 관련 dependency 추가
+      2. module-api/application.yml에 DB 환경변수 설정
+
+   2. 도메인, Repository 구현
+
+      module-common에서 구현
+
+   3. Service, Controller 구현
+
+      module-api에서 구현
+
+   4. Scan 범위 설정
+
+      multimodule / application 에서 추가
+
+      1. scanBasePackages = {"bean등록할 패키지의 상위 패키지 위치"} : Controller, Service
+      2. EntityScan("패키지") : Entity
+      3. EnableJpaRepositories(backPackages = "패키지") : Repository
+
+4. Gradle로 빌드
+
+   1. jar 파일 설정
+
+      참고만 하는 module-common/ build.gradle에서 설정
+
+      1. plain-jar 파일만 생성
+
+   2. 빌드
+
+5. Profile 설정
+   1. 생성
+   2. 적용

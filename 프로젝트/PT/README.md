@@ -183,7 +183,7 @@
 
 ## 이용권 만료
 
-ItemReader, ItemWriter
+ExpirePassesJobConfig
 
 1. @Bean 구현
 1. Job 구현
@@ -209,10 +209,24 @@ Tasklet
 
 1. @Bean 구현(AddPassesJobConfig)
    1. job
+   
+      step 등록
+   
    2. step
+   
+      tasklet 등록
+   
 2. tasklet 구현(AddPassesTasklet)
    1. execute(RepeatStatus)
+   
+      1. status=Ready이고  started=now 인 bulkpass 찾기
+      2. user group에 속한 user에게 이용권 추가
+      3. status=completed로 업데이트
+      4. 다 추가하면 RepeatStatus.FINISHED
+   
    2. addPasses
+   
+      bulkPass 정보로 pass 데이터 생성
 
 
 
@@ -225,14 +239,31 @@ Multi-Threaded Step
 @Bean 구현
 
 1. Job 구현 : step 순서
-2. Step 
-   1. 알람대상 읽어오기
-   2. 알람 보내기 - 멀티 쓰레드를 위해서 taskExecutor 사용
-3. ItemReader 
-   1. JpaPaging - update가 필요없으므로
-   2. SynchronizedReader - reader는 순차적으로 가게하고, writer는 멀티쓰레드하게 함
-4. ItemProcessor
-5. ItemWriter
+   1. addNotificationStep
+   2. sendNotificationStep
+
+2. addNotificationStep
+   1. ItemReader
+      1. 한번에 10 rows 씩
+      2. status=READY, now + 10 = 예약시작  ->  BookingEntity 조회
+   2. ItemProcessor
+      1. NotificationEvent.event = BEFORE_CLASS로 변경
+   3. ItemWriter
+      1. DB에 반영
+3. sendNotificationStep
+   1. ItemReader
+      1. 한번에 10 rows 씩
+      2. event=BEFORE_CLASS, sent=false  ->  NotivficationEvent Entity 조회
+      3. SynchronizedReader로 순차적으로 읽어오기
+   2. ItemWriter
+      1. 카카오 메시지 보내기
+      2. 보내면 sent=true, setAt = now
+      3. NotificationRepository.save()
+      4. cnt++
+      5. 로그로 cnt건 전송성공
+   3. taskExecutor
+      1. 멀티 쓰레드를 위해서 taskExecutor 사용
+
 
 
 

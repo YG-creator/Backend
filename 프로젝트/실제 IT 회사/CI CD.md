@@ -312,7 +312,7 @@ Storage
 
 3. 경로 작성 
 
-   reposiory이름/.github/workflows/deploy.yaml 되도록 경로 입력
+   `.github/workflows/deploy.yaml`
 
 4. script 작성
 
@@ -385,7 +385,8 @@ Storage
    
    ```
 
-   
+
+
 
 ## appspec.yaml 작성
 
@@ -419,7 +420,7 @@ Storage
          runas: ubuntu
    ```
 
-4. AWS code-deploy 재실행
+4. AWS codedeploy-agent 재실행
 
    1. cmd 실행
    2. `sudo service codedeploy-agent restart`
@@ -508,17 +509,24 @@ application 동작법, 로그 설정, 백그라운드에서도 동작하기, mul
 
        Settings - Security - Actions - add new secret클릭 -> name, secret입력 add secret
 
-    3. deploy.yaml 파일 설정
+    3. application.yaml 변수 설정
+
+       ```yaml
+       override:
+       	value: 'from prod'
+       ```
+       
+    3. deploy.yml 파일 설정
 
        1. 경로 변수(env) 추가
 
           ```yaml
           env:
-            RESOURCE_PATH: ./src/main/resources/application.yaml
+            RESOURCE_PATH: ./src/main/resources/application.yaml	# 파일 경로
           ```
-
-       2. secret값 주입하기
-
+    
+       2. 경로에 있는 파일의 변수에 secret값 주입하기
+    
           ```yaml
           - 	name: Set yaml file
           	uses: microsoft/variable-substitution@v1	# 값 덮어쓰기
