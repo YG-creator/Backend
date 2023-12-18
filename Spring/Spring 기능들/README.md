@@ -1,31 +1,132 @@
-# Spring Boot Validation
+# Validation
+
+## Spring Boot Validation
+
+요청 변수 검증하기
+
+1. dependency 추가
+
+   ```
+   implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation'
+   ```
+
+2. @validation spec 확인 
+
+   https://beanvalidation.org/2.0-jsr380/
 
 ![image-20220905091517280](C:\Users\YG\AppData\Roaming\Typora\typora-user-images\image-20220905091517280.png)
 
-https://beanvalidation.org/2.0-jsr380/
+3. dto class에서 검증 필요한 변수에 validation Annotation 사용
 
-RESP API 함수매개변수에 @Valid
+   message = "에러시 발생할 메시지" 속성 사용 가능
 
-dto의 변수에 Annotation
+4. 검증 필요한 REST API Controller에서 요청 변수에 @Valid 사용
+
+   검증이 실패한 경우 에러 발생
+
+   ```java
+   @PostMapping("/user")
+   public ResponseEntity user(@Valid @RequestBody User user, BindingResult bindingResult){
+   
+       if(bindingResult.hasErrors()){
+           StringBuilder sb = new StringBuilder();
+           bindingResult.getAllErrors().forEach(objectError -> {
+           FieldError field = (FieldError) objectError;
+           String message = objectError.getDefaultMessage();
+   
+           System.out.println("field : "+field.getField());
+           System.out.println(message);
+   
+           sb.append("field : "+field.getField());
+           sb.append("message : "+message);
+   
+           });
+   
+       	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(sb.toString());
+       }
+   
+   	return ResponseEntity.ok(user);
+   }
+   ```
+
+   
+
+   
+
+   
 
 
 
-## Custom
+## Custom validation
 
-1. AssertTrue / False 와 같은 메소드 지정을 통해서 Custom Logic 적용 가능 -> 재사용 불가
-2. ConstraintValidator를 적용하여 재사용이 가능한 Custom Logic 적용 가능 -> 재사용 가능
+1. 방법1
 
+   AssertTrue / False 와 같은 메소드 지정을 통해서 Custom Logic 적용 가능 -> 재사용 불가
 
+   ![image-20231218180651421](md-images/image-20231218180651421.png)
+
+2. 방법2
+
+   ConstraintValidator를 적용하여 재사용이 가능한 Custom Logic 적용 가능 -> 재사용 가능
+
+   1. Annotation 만들기
+
+   ```java
+   @Constraint(validatedBy = {YearMonthValidator.class})
+   @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+   @Retention(RUNTIME)
+   public @interface YearMonth {
+   
+       String message() default "yyyyMM 형식에 맞지 않습니다.";
+   
+       Class<?>[] groups() default { };
+   
+       Class<? extends Payload>[] payload() default { };
+   
+       String pattern() default "yyyyMMdd";
+   }
+   ```
+
+   2. 검증 로직 만들기
+
+   ```java
+   public class YearMonthValidator implements ConstraintValidator<YearMonth, String> {
+   
+       private String pattern;
+   
+       @Override
+       public void initialize(YearMonth constraintAnnotation) {
+           this.pattern = constraintAnnotation.pattern();
+       }
+   
+       @Override
+       public boolean isValid(String value, ConstraintValidatorContext context) {
+   
+           // yyyyMM
+           try{
+               LocalDate localDate = LocalDate.parse(value+"01" , DateTimeFormatter.ofPattern(this.pattern));
+           }catch (Exception e){
+               return false;
+           }
+   
+           return true;
+       }
+   }
+   ```
+
+   
 
 ## Spring Boot Exception 처리
 
-1. @ControllerAdvice : Global 예외 처리 및 특정 Package / Controller 예외 처리
+1. 방법1
+
+   @RestControllerAdvice : 전체 예외 처리 or 특정 Package / Controller 예외 처리
 
    ```java
-   @RestControllerAdvice(basePackageClasses = ApiController.class)
+   @RestControllerAdvice(basePackageClasses = ApiController.class)	// 특정 Controller
    public class ApiControllerAdvice {
-       @ExceptionHandler(value = Exception.class)
-       public ResponseEntity exception(Exception e){
+       @ExceptionHandler(value = Exception.class)		// 전체 예외 처리
+       public ResponseEntity exception(Exception e){	// 응답
            System.out.println(e.getClass().getName());
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
        }
@@ -34,20 +135,22 @@ dto의 변수에 Annotation
 
    
 
-2. @ExceptionHandler : 특정 Controller 예외 처리
+2. 방법2
 
-   우선순위 : @ExceptionHandler > @ControllerAdvice
+   Controller내 @ExceptionHandler : 특정 Controller 예외 처리
 
+   Controller의 @ExceptionHandler 우선순위가 ControllerAdvice @ExceptionHandler보다 높음
+   
    ```java
    public class ApiController {
-       @ExceptionHandler(value = Exception.class)
+       @ExceptionHandler(value = Exception.class)	
        public ResponseEntity exception(Exception e){
            System.out.println(e.getClass().getName());
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("");
        }
    }
    ```
-
+   
    
 
 ## 모범 사례
@@ -74,31 +177,30 @@ dto의 변수에 Annotation
    
    
        @PostMapping("")
-       public User post(@Valid @RequestBody User user){
+       public User post(@Valid @RequestBody User user){	// validation
            System.out.println(user);
            return user;
        }
-   
    }
    ```
+   
+2. advice package 생성 후 ApiControllerAdvice class 생성
 
-2. advice package 생성 -> class 생성
-
-3. @ControllerAdvice 선언
+3. @RestControllerAdvice 선언 후 basePackageClasses로 특정 클래스 선택
 
    ```java
-   @RestControllerAdvice(basePackageClasses = ApiController.class) -> 특정 컨트롤러에서만 advice 함
+   @RestControllerAdvice(basePackageClasses = ApiController.class) // 특정 컨트롤러에서만 advice 함
    public class ApiControllerAdvice {    
    ```
 
-4. Exeption 처리 할 거 설정 
+4. @ExceptionHandler로 처리할 예외 선택
 
    ```java
    	@ExceptionHandler(value = Exception.class)
    	public ResponseEntity exception(Exception e){
    ```
 
-5. dto(Error, ErrorResponse) 구현
+5. 에러 관련 dto(Error, ErrorResponse) 구현
 
    ```java
    public class Error {
@@ -286,40 +388,69 @@ dto의 변수에 Annotation
    
            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
        }
-   
    }
    ```
-
    
 
 
 
-# Filter???
+
+# Filter
 
 * 특징
   * 유일하게 ServletRequest, ServletResponse의 객체를 변환할 수 있음
-  * Web application에 등록됨
+  * Spring Context에 등록되지 않고 Web application에 등록됨
 
 * 용도
 
-  * 요청,응답 정보를 변경하거나 값 확인(Logging)
+  * 주로 요청,응답 정보를 변경하거나 값 확인(Logging)
 
   * 인증과 관련된 Logic들을 선/후 처리(Service와 business logic 분리)
 
 * 동작 순서
 
-  Filter -> Interceptor -> AOP
+  Request -> Filter -> Interceptor -> AOP
 
 ![image-20220906183856348](md-images/image-20220906183856348.png)
 
-* 코드
+* 방법
+1. GlobalFilter 구현
+     1. @WebFilter(urlPatterns = "~~")
+     2. Filter 상속
+   3. doFilter() 재정의
+
+* 예시
+
+  로그 남기기
 
   ```java
+  @WebFilter(urlPatterns = "/api/*")	// 적용할 url
+  public class RequestFilter implements Filter {	// 상속
+      @Override
+      public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {	// 필터 구현
+          ContentCachingRequestWrapper wrappingRequest = new ContentCachingRequestWrapper((HttpServletRequest)request);
+          ContentCachingResponseWrapper wrappingResponse = new ContentCachingResponseWrapper((HttpServletResponse) response);
+  
+          chain.doFilter(wrappingRequest, wrappingResponse);
+  
+          System.out.println("---req ---");
+          System.out.println(new String(wrappingRequest.getContentAsByteArray(),"UTF-8"));
+          byte[] b = wrappingRequest.getContentAsByteArray();
+          System.out.println("---req ---");
+  
+          System.out.println("---res ---");
+          System.out.println(new String(wrappingResponse.getContentAsByteArray(),"UTF-8"));
+          System.out.println("---res ---");
+          wrappingResponse.copyBodyToResponse();
+      }
+  }
   ```
 
   
 
-# Interceptor???
+
+
+# Interceptor
 
 * 특징
 
@@ -335,11 +466,18 @@ dto의 변수에 Annotation
 
   ![image-20220906201506939](md-images/image-20220906201506939.png)
 
-* 코드
+* 예시
 
-  ```java
-  ```
-
+  인증
+  
+  1. Auth annotation 구현
+  2. AuthInterceptor 구현
+  3. config 구현
+  4. Controller에 AuthInterceptor 적용
+  5. exception 구현
+  
+  
+  
   
 
 

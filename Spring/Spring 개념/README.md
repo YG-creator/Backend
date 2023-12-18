@@ -24,6 +24,8 @@ Spring Security
 
 ## IoC / DI
 
+Bean 객체를 등록하면 개발자가 아닌 Container에서 객체 생명주기를 관리함 : IoC
+
 1. IoC(Inversion of Control)
 
    1. 개념 
@@ -33,17 +35,30 @@ Spring Security
 
       3. Container : Bean들이 관리되는 장소
 
-   2. 방법
+   2. 작동 원리
 
-      1. @Component or @Component("이름") : Bean 생성
+      @SpringBootApplication = @ComponentScan + @SpringBootConfiguration-@Component
 
-         @Qualifier("이름") : Bean이 여러개일 때 선택
+      @Component를 사용하면 Container의 Bean으로 등록됨 -> @SpringBootApplication으로 Bean으로 등록된 객체 사용가능
 
-      2. @Configuration : 여러개 Bean 생성
+   3. Bean 생성 방법
 
-         1. @Bean("이름") 선언 후 생성자 구현
+      1. 개발자가 직접 작성한 클래스를 스프링 Bean으로 등록
 
-         2. context.getBean("이름",클래스이름.class) : bean 가져오기
+         * @Component으로 Bean 생성
+           * @Controller
+           * @Service
+           * @Repository
+
+         * @Qualifier("이름") : 주입 가능한 Bean이 여러개라서 에러가 뜨는 경우 사용 
+
+      2. 외부 라이브러리에서 정의한 클래스를 스프링 Bean으로 등록 
+
+         1. @Configuration : 한개의 클래스에서 여러개 Bean 생성
+         2. @Bean("이름") 선언 후 생성자 구현
+         3. context.getBean("이름",클래스이름.class) : bean 가져오기
+
+   4. 작동 원리
 
 2. DI(Dependency Injection)
 
@@ -53,15 +68,16 @@ Spring Security
       * 코드 확장이나 변경시 영향 최소화(추상화)
       * 순환참조 막을 수 있다.
 
-   2. 방법(전략정 패턴)
+   2. 예시 ) Encoder 전략적 패턴
 
-      * 인터페이스로 확장함
-      * 객체 구현
-        * 생성자 - 인터페이스를 구현한 객체 선택
-        * 함수 - 인터페이스 함수 실행
-      * 생성자로 인스턴스 생성 -> 함수 실행
-
-      ex) encoder
+      외부에서 Encoder 전략을 주입함
+      
+      1. 전략 인터페이스 생성
+      2. 전략 인터페이스 구현체(base64, urlEncoder) 작성
+      3. Encoder class 구현 
+         * 생성자(인터페이스class)
+         * 함수 - encode
+      4. 외부에서 전략을 선택해서 주입
 
 
 

@@ -16,6 +16,22 @@
 
 
 
+## Spring Boot vs Spring MVC
+
+Spring Web이 `Spring MVC` 기반의 프로젝트를 생성함을 의미
+
+1. 설정 자동화
+
+   `Dispatcher Servlet` `Handler Mapping` `View Resolver` 설정(XML) -> Annotation으로 간편해짐
+
+2. 내장 서버
+
+   WAS 서버 내장
+
+   
+
+
+
 ## Build Tool
 
 * Maven
@@ -36,7 +52,7 @@
 
 
 
-## IntellilJ로 실행하는 법
+## IntelliJ로 실행하는 법
 
 * spring initializr로 프로젝트 다운받아서도 가능 -> 무료
 
@@ -80,7 +96,7 @@ Resource Read, parameter header에 작성
 
 1. 고정된 주소
 
-   @GetMapping("주소")   =  @RequestMapping(path="주소", method = Request.GET)
+   @GetMapping("주소");
 
 2. PathVariable(변하는 주소)
 
@@ -230,14 +246,16 @@ Resource Delete, Query Parameter(데이터가 작아서)
 
 ## 1. JSON으로 응답
 
-1. JSON Body에 자동으로 Entity 담기
+1. @RestController
 
-   1. Controller 매핑하기
+   REST API 형태(JSON)로 응답할 경우 사용
+
+   1. @RequestMapping
 
       ![image-20221209170305421](md-images/image-20221209170305421.png)
 
    2. dto 매핑
-
+   
       1. @JsonNaming : JSON(스네이크) -> dto(카넬) -> JSON(스네이크) 자동 매핑
       2. @JsonInclude : null인거 출력 안하기
 
@@ -252,7 +270,7 @@ Resource Delete, Query Parameter(데이터가 작아서)
          ![image-20221209165838716](md-images/image-20221209165838716.png)
 
       2. ResponseEntity(JSON Body + 상태메시지)
-
+   
          ![image-20221209165856303](md-images/image-20221209165856303.png)
 
 
@@ -271,7 +289,11 @@ Resource Delete, Query Parameter(데이터가 작아서)
 
    ![image-20221209171830921](md-images/image-20221209171830921.png)
 
+
+
 # Object Mapper
+
+object - text 변환기
 
 1. dto 클래스 구현
 
@@ -310,5 +332,7 @@ Resource Delete, Query Parameter(데이터가 작아서)
    3. 변수이름 matching(카넬, 스네이크)
 
       매칭 시킬 변수마다 @JsonProperty(name="json에서 작성한 key이름")로 설정
-
+      
+      보통@JsonProperty(name=스네이크)
+   
    

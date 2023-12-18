@@ -2,7 +2,7 @@
 
 ## 개념
 
-자주 사용되는 설계 패턴을 정형화 해서 이를 유형별로 가장 최적의 방법으로 개발할 수 있도록 정해둔 설계 패턴
+자주 사용되는 설계 패턴을 정형화한 설계 패턴
 
 ## Gof 디자인 패턴
 
@@ -28,19 +28,41 @@
 
 ## 생성 패턴
 
- 개념 : 객체 생성 변경, 시스템 영향 최소화, 코드 유연성 높임
+* 개념
 
+  객체를 생성하는 것과 관련된 패턴
 
+* 효과
+  * 객체 생성 변경이 전체 시스템에 미치는 영향 최소화
+  * 코드 유연성 높임
+
+* 종류
+  * Factory Method
+  * Singleton
+  * Prototype
+  * Builder
+  * Abstract Factory
+  * Chaining
 
 ### 싱글톤 패턴
 
-1. 개념 : 객체 1개만 생성해서 공유 ex) TCP 소켓
+1. 개념
+
+   객체 1개만 생성해서 공유하는 패턴 ex) TCP 소켓
 
 2. 작성법
-   1. 디폴트 생성자 private
-   2. public static getInstance() -> 인스턴스가 없으면 생성, 있으면 return 인스턴스
-   2. 생성할 클래스 마다 getInstance() 사용
+   1. private static class이름 객체이름 = null;
+   
+   2. private 디폴트 생성자
 
+   3. public static getInstance() 
+   
+      * 인스턴스가 없으면 생성
+   
+      * 있으면 return 인스턴스
+   
+   2. 생성할 클래스 마다 getInstance() 사용
+   
 3. 예시
 
    ![image-20221206181155788](md-images/image-20221206181155788.png)![image-20221206182339893](md-images/image-20221206182339893.png)
@@ -49,18 +71,52 @@
 
 ## 구조 패턴
 
- 개념 : 프로그램 구조(자료구조, 인터페이스)를 설계하는 패턴, 복잡한 구조에 용이
+* 개념
+
+  프로그램 구조(자료구조,인터페이스)를 설계하는데 활용 될 수 있는 패턴
+
+* 효과
+
+  복잡한 구조 개발에 용이
+
+* 종류
+  * Adapter
+  * Composite
+  * Bridge
+  * Decorator
+  * Facade
+  * Proxy
 
 
 
 ### Adapter 패턴
 
-1. 개념 : 인터페이스로 객체 변경없이 재사용 가능, OCP 따름
+1. 개념 
+
+   * 호환성이 없는 기존 클래스의 인터페이스를 변환하여 재사용할 수 있도록 한다.
+
+     ex) 220v -> 110v 변환기
+
+   * 개방페쇄 원칙(OCP) 따름
 
 2. 작성법
-   1. 결과물을 implements
-   2. 바꿀 객체를 선언, 생성자 선언
-
+   1. interface 2개 작성
+   
+   2. class이름 implements interface1
+   
+      interface 함수 재정의
+   
+   3. AdapterClass implements interface2
+   
+      1. interface1 객체 선언
+      2. 생성자로 interface1 객체 주입
+      3. interface1 함수 사용해서 interface2 재정의
+   
+   4. 변환
+   
+      1. 바꿀 객체 생성
+      2. 변환기 적용
+   
 3. 예시
 
    1. Interface 110V
@@ -79,7 +135,8 @@
 
       ![image-20221206185404618](md-images/image-20221206185404618.png)
 
-5. Main에 어댑터 사용
+   5. Main에 어댑터 사용
+
 
    ![image-20221206202519087](md-images/image-20221206202519087.png)
 
@@ -87,8 +144,12 @@
 
 ###  Proxy 패턴 
 
-1. 개념 : 대신 처리하는 것, OCP, DIP 따름
+1. 개념
 
+   뭔가를 대신 처리하는 것
+   
+   OCP, DIP 따름
+   
    ![image-20220831105435664](md-images/image-20220831105435664.png)
 
 
@@ -115,25 +176,31 @@
 
       
 
-   2. AOP 패턴 : 특정 메소드 앞뒤로 Argument 조작, 흩어져 있는 하나로 공통된 기능을 묶어 줄수 있음, 시간 체크
+   2. AOP 패턴 
 
-      1. 전,후 시간재기기능 구현
+      특정 메소드 앞뒤로 Argument 조작, 흩어져 있는 하나로 공통된 기능을 묶어 줄수 있음, 시간 체크
+
+      1. 실행전 -> 로직 -> 실행 후
 
       ![image-20221206213515953](md-images/image-20221206213515953.png)![image-20221206214011453](md-images/image-20221206214011453.png)![image-20221206213602521](md-images/image-20221206213602521.png)![image-20221206213921805](md-images/image-20221206213921805.png)![image-20221206213637089](md-images/image-20221206213637089.png)
 
       ​	
 
-   2. main에서 실행 -> 1.5초, 0초 나옴
-
+      2.  생성자 + 람다로 전, 후 함수 구현 후 실행
+   
       ![image-20221206214154127](md-images/image-20221206214154127.png)![image-20221206214246250](md-images/image-20221206214246250.png)
 
 ### Decorator 패턴
 
-1. 개념 : 기존 뼈대 유지, 기능 추가, OCP, DIP 따름
+1. 개념
+
+   기존 뼈대 유지하되, 확장이 필요한 경우 활용
+
+   OCP, DIP 따름
 
 ![image-20220831111218488](md-images/image-20220831111218488.png)
 
-​	ex) 커피 레시피, 자동차 등급별 가격
+​	ex) 커피 레시피, 자동차 등급별 가격, BufferedReader
 
 
 
@@ -158,33 +225,61 @@
 
 ## 행위 패턴
 
-개념 : 반복적으로 사용되는 객체들의 상호작용을 패턴화 한 것, 상호작용하는 방법, 책임 분산
+* 개념
+
+  반복적으로 사용되는 객체들의 상호작용을 패턴화 한 것, 
+
+* 효과
+
+  상호작용하는 방법, 책임 분산
+
+* 종류
+  * Template Method
+  * Interpreter
+  * Iterator
+  * Observer
+  * Strategy
+  * Visitor
+  * Chain of responsibility
+  * Command
+  * Mediator
+  * State
+  * Memento
 
 
 
 ### Observer 패턴
 
-1. event listener(이벤트 전달)
+개념 : 변화가 일어났을 때, 미리 등록된 클래스에 통보해주는 패턴
 
-   ![image-20220831113859351](md-images/image-20220831113859351.png)
+사용처 : event listener(이벤트 전달)
+
+![image-20220831113859351](md-images/image-20220831113859351.png)
 
 ex) 
 
-1. Interface
+1. Event Interface
 
    ![image-20221207194819193](md-images/image-20221207194819193.png)
 
-2. Class 
+2. Button Class 
+
+   1. 생성자
+   2. 인터페이스 생성자
+   3. 인터페이스 함수 사용 함수
 
    ![image-20221207194742529](md-images/image-20221207194742529.png)
 
 3. 실행
 
+   1. Button 인스턴스 생성
+   2. 인터페이스 구현
+
    ![image-20221207195323795](md-images/image-20221207195323795.png)
 
 ### Strategy 패턴
 
-개념 : 유사한 행위들을 캡슐화 하여 객체의 행위를 바꾸고 싶은경우 전략만 바꿔서 변경
+개념 : 유사한 행위들을 캡슐화하여, 객체의 행위를 바꾸고 싶은경우 직접 변경하는 것이 아닌 전략만 변경하여, 유연하게 확장하는 패턴
 
 ![image-20220831132006125](md-images/image-20220831132006125.png)
 
@@ -206,7 +301,10 @@ ex) Encoder
    
 4. 전략에 맞게 사용
    
+   1. Interface 객체 생성
+   2. 사용할 전략 객체 생성
+   3. 사용할 객체 선택
+   4. 사용
+   
    ![image-20221207201322581](md-images/image-20221207201322581.png)
    
-   1. 전략선택 (encoder.setEncoderStrategy(전략 선택))
-   2. 함수 실행
